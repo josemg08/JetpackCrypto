@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Jetpack Crypto</string>
+    <string name="coin_image_description" translatable="false">JCoin image</string>
+</resources>
