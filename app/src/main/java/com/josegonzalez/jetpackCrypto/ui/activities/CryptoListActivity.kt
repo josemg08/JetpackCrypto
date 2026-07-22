@@ -7,14 +7,16 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.josegonzalez.jetpackCrypto.R
+import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
 import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
 import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
-import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoAdapter
+import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoPagingAdapter
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
@@ -23,13 +25,14 @@ import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoListViewModelF
 class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
 
     private lateinit var viewModel: CryptoListContract
-    private lateinit var adapter: CryptoAdapter
+    private lateinit var adapter: CryptoPagingAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_crypto_list)
 
-        val repository = CryptoRepositoryImpl(RetrofitClient.apiService)
+        val database = CryptoDatabase.getInstance(applicationContext)
+        val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
         val factory = CryptoListViewModelFactory(repository, this)
         viewModel = ViewModelProvider(this, factory)[CryptoListViewModel::class.java]
 
@@ -38,33 +41,27 @@ class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
         val swipeRefresh = findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
         val errorText = findViewById<TextView>(R.id.tv_error)
 
-        adapter = CryptoAdapter { coin -> viewModel.onCoinSelected(coin) }
+        adapter = CryptoPagingAdapter { coin -> viewModel.onCoinSelected(coin) }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        swipeRefresh.setOnRefreshListener {
-            viewModel.onRefresh()
+        adapter.addLoadStateListener { loadState ->
+            progressBar.visibility =
+                if (loadState.refresh is LoadState.Loading) View.VISIBLE else View.GONE
             swipeRefresh.isRefreshing = false
+
+            val error = loadState.refresh as? LoadState.Error
+            errorText.visibility = if (error != null) View.VISIBLE else View.GONE
+            errorText.text = error?.error?.message
         }
 
-        viewModel.coins.observe(this) { coins ->
-            adapter.updateCoins(coins)
+        swipeRefresh.setOnRefreshListener {
+            adapter.refresh()
         }
 
-        viewModel.isLoading.observe(this) { isLoading ->
-            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        viewModel.coinsFlow.observe(this) { pagingData ->
+            adapter.submitData(lifecycle, pagingData)
         }
-
-        viewModel.errorMessage.observe(this) { message ->
-            if (message != null) {
-                errorText.text = message
-                errorText.visibility = View.VISIBLE
-            } else {
-                errorText.visibility = View.GONE
-            }
-        }
-
-        viewModel.loadCoins()
     }
 
     override fun navigateToDetail(coin: Coin) {

@@ -1,8 +1,10 @@
 package com.josegonzalez.jetpackCrypto.domain.repository
 
+import androidx.paging.PagingData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import kotlinx.coroutines.flow.Flow
 
 interface CryptoRepository {
-    suspend fun getCoins(page: Int, perPage: Int = 20): List<Coin>
+    fun getCoinsPaged(): Flow<PagingData<Coin>>
     suspend fun getCoinDetail(coinId: String): Coin
 }

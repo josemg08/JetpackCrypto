@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import coil.load
 import com.josegonzalez.jetpackCrypto.R
+import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
 import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
 import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
@@ -27,7 +28,8 @@ class CryptoDetailActivity : AppCompatActivity(), CryptoNavigation {
 
         val coinId = intent.getStringExtra(EXTRA_COIN_ID) ?: run { finish(); return }
 
-        val repository = CryptoRepositoryImpl(RetrofitClient.apiService)
+        val database = CryptoDatabase.getInstance(applicationContext)
+        val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
         val factory = CryptoDetailViewModelFactory(repository, this)
         viewModel = ViewModelProvider(this, factory)[CryptoDetailViewModel::class.java]
 
