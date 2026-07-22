@@ -34,7 +34,10 @@ class CryptoAdapter(
 
     inner class CoinViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(coin: Coin) {
-            itemView.findViewById<ImageView>(R.id.iv_coin_image).load(coin.imageUrl)
+            itemView.findViewById<ImageView>(R.id.iv_coin_image).load(coin.imageUrl) {
+                error(R.drawable.ic_launcher_foreground)
+                placeholder(R.drawable.ic_launcher_foreground)
+            }
             itemView.findViewById<TextView>(R.id.tv_coin_name).text = coin.name
             itemView.findViewById<TextView>(R.id.tv_coin_symbol).text = coin.symbol
             itemView.findViewById<TextView>(R.id.tv_coin_price).text = "$%.2f".format(coin.currentPriceUsd)

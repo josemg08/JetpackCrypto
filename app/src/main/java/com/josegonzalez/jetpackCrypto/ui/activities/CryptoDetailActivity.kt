@@ -50,7 +50,10 @@ class CryptoDetailActivity : AppCompatActivity(), CryptoNavigation {
 
         viewModel.coin.observe(this) { coin ->
             coin ?: return@observe
-            imageView.load(coin.imageUrl)
+            imageView.load(coin.imageUrl) {
+                error(R.drawable.ic_launcher_foreground)
+                placeholder(R.drawable.ic_launcher_foreground)
+            }
             nameText.text = coin.name
             symbolText.text = coin.symbol
             priceText.text = "$%.2f".format(coin.currentPriceUsd)
