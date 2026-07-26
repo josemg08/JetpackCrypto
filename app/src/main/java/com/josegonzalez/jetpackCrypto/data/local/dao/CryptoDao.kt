@@ -1,12 +1,12 @@
 package com.josegonzalez.jetpackCrypto.data.local.dao
 
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.josegonzalez.jetpackCrypto.data.local.entity.CoinEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CryptoDao {
@@ -15,7 +15,7 @@ interface CryptoDao {
     fun getCoinsAsPagingSource(): PagingSource<Int, CoinEntity>
 
     @Query("SELECT * FROM coins ORDER BY price_change_24h DESC LIMIT 10")
-    fun getTopGainers(): LiveData<List<CoinEntity>>
+    fun getTopGainers(): Flow<List<CoinEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(coins: List<CoinEntity>)

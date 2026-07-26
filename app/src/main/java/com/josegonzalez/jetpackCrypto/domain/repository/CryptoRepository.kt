@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface CryptoRepository {
     fun getCoinsPaged(): Flow<PagingData<Coin>>
+    fun getTopGainers(): Flow<List<Coin>>
     suspend fun getCoinDetail(coinId: String): Coin
 }

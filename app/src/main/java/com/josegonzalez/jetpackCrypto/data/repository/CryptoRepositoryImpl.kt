@@ -29,6 +29,9 @@ class CryptoRepositoryImpl(
             pagingSourceFactory = { dao.getCoinsAsPagingSource() }
         ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
 
+    override fun getTopGainers(): Flow<List<Coin>> =
+        dao.getTopGainers().map { entities -> entities.map { it.toDomain() } }
+
     override suspend fun getCoinDetail(coinId: String): Coin =
         withContext(Dispatchers.IO) {
             apiService.getCoinDetail(coinId).toDomain()

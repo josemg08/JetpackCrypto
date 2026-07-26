@@ -77,6 +77,12 @@ dependencies {
     // Paging 3
     implementation libs.androidx.paging.runtime.ktx
 
+    // WorkManager
+    implementation libs.androidx.work.runtime.ktx
+
+    // ViewPager2
+    implementation libs.androidx.viewpager2
+
     // Tests
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit.v121
