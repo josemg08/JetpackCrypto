@@ -47,9 +47,8 @@ dependencies {
     implementation libs.androidx.constraintlayout
     implementation libs.androidx.swiperefreshlayout
 
-    // Lifecycle — ViewModel + LiveData
+    // Lifecycle — ViewModel + StateFlow
     implementation libs.androidx.lifecycle.viewmodel.ktx
-    implementation libs.androidx.lifecycle.livedata.ktx
     implementation libs.androidx.lifecycle.runtime.ktx
 
     // Fragment + Activity KTX
@@ -89,8 +88,7 @@ dependencies {
     implementation libs.compose.ui.tooling.preview
     implementation libs.compose.material3
     implementation libs.compose.foundation
-    implementation libs.compose.runtime.livedata
-    implementation libs.lifecycle.runtime.compose
+    implementation libs.lifecycle.runtime.compose  // collectAsStateWithLifecycle()
     implementation libs.activity.compose
     implementation libs.paging.compose
     implementation libs.coil.compose

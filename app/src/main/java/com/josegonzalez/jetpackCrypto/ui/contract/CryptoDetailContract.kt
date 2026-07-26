@@ -1,12 +1,8 @@
 package com.josegonzalez.jetpackCrypto.ui.contract
 
-import androidx.lifecycle.LiveData
-import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import kotlinx.coroutines.flow.StateFlow
 
 interface CryptoDetailContract {
-    val coin: LiveData<Coin?>
-    val isLoading: LiveData<Boolean>
-    val errorMessage: LiveData<String?>
-
+    val uiState: StateFlow<CryptoDetailUiState>
     fun loadCoin(coinId: String)
 }

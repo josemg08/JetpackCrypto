@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -23,14 +24,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +40,7 @@ fun CryptoTopGainersScreen(
     viewModel: CryptoTopGainersContract,
     onNavigateBack: () -> Unit
 ) {
-    val coins by viewModel.topGainers.observeAsState(emptyList())
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -52,24 +54,36 @@ fun CryptoTopGainersScreen(
             )
         }
     ) { padding ->
-        if (coins.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Loading top gainers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        when (uiState) {
+            is CryptoTopGainersUiState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator() }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding)
-            ) {
-                items(count = coins.size) { index ->
-                    TopGainerItem(
-                        rank = index + 1,
-                        coin = coins[index],
-                        onClick = { viewModel.onCoinSelected(coins[index]) }
+            is CryptoTopGainersUiState.Success -> {
+                val coins = (uiState as CryptoTopGainersUiState.Success).coins
+                LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
+                    items(count = coins.size) { index ->
+                        TopGainerItem(
+                            rank = index + 1,
+                            coin = coins[index],
+                            onClick = { viewModel.onCoinSelected(coins[index]) }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+            }
+            is CryptoTopGainersUiState.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = (uiState as CryptoTopGainersUiState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
                     )
-                    HorizontalDivider()
                 }
             }
         }

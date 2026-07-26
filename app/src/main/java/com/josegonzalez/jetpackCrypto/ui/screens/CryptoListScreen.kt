@@ -21,20 +21,20 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.asFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListUiState
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersUiState
 import kotlinx.coroutines.launch
 
 private val tabs = listOf("All Coins", "Top Gainers")
@@ -71,10 +71,11 @@ fun CryptoListScreen(
 
 @Composable
 private fun CoinListPage(viewModel: CryptoListContract) {
-    val coinsFlow = remember(viewModel) { viewModel.coinsFlow.asFlow() }
-    val lazyPagingItems = coinsFlow.collectAsLazyPagingItems()
-    val isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading
-    val error = lazyPagingItems.loadState.refresh as? LoadState.Error
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyPagingItems = viewModel.coinsFlow.collectAsLazyPagingItems()
+
+    val errorMessage = (uiState as? CryptoListUiState.Error)?.message
+        ?: (lazyPagingItems.loadState.refresh as? LoadState.Error)?.error?.message
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -89,20 +90,18 @@ private fun CoinListPage(viewModel: CryptoListContract) {
                     Box(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                    ) { CircularProgressIndicator() }
                 }
             }
         }
 
-        if (isRefreshing && lazyPagingItems.itemCount == 0) {
+        if (lazyPagingItems.loadState.refresh is LoadState.Loading && lazyPagingItems.itemCount == 0) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
 
-        error?.let {
+        errorMessage?.let {
             Text(
-                text = it.error.message ?: "Failed to load coins",
+                text = it,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.align(Alignment.Center).padding(16.dp)
             )
@@ -112,17 +111,30 @@ private fun CoinListPage(viewModel: CryptoListContract) {
 
 @Composable
 private fun TopGainersPage(viewModel: CryptoTopGainersContract) {
-    val coins by viewModel.topGainers.observeAsState(emptyList())
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    if (coins.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Loading top gainers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    when (uiState) {
+        is CryptoTopGainersUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
-    } else {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(count = coins.size) { index ->
-                CoinItem(coin = coins[index], onClick = { viewModel.onCoinSelected(coins[index]) })
-                HorizontalDivider()
+        is CryptoTopGainersUiState.Success -> {
+            val coins = (uiState as CryptoTopGainersUiState.Success).coins
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(count = coins.size) { index ->
+                    CoinItem(coin = coins[index], onClick = { viewModel.onCoinSelected(coins[index]) })
+                    HorizontalDivider()
+                }
+            }
+        }
+        is CryptoTopGainersUiState.Error -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = (uiState as CryptoTopGainersUiState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
     }

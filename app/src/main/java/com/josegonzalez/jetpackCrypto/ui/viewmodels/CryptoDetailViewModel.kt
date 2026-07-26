@@ -1,13 +1,14 @@
 package com.josegonzalez.jetpackCrypto.ui.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailContract
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailUiState
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CryptoDetailViewModel(
@@ -15,25 +16,16 @@ class CryptoDetailViewModel(
     private val navigation: CryptoNavigation
 ) : ViewModel(), CryptoDetailContract {
 
-    private val _coin = MutableLiveData<Coin?>()
-    override val coin: LiveData<Coin?> = _coin
-
-    private val _isLoading = MutableLiveData<Boolean>()
-    override val isLoading: LiveData<Boolean> = _isLoading
-
-    private val _errorMessage = MutableLiveData<String?>()
-    override val errorMessage: LiveData<String?> = _errorMessage
+    private val _uiState = MutableStateFlow<CryptoDetailUiState>(CryptoDetailUiState.Loading)
+    override val uiState: StateFlow<CryptoDetailUiState> = _uiState.asStateFlow()
 
     override fun loadCoin(coinId: String) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
+            _uiState.value = CryptoDetailUiState.Loading
             try {
-                _coin.value = repository.getCoinDetail(coinId)
+                _uiState.value = CryptoDetailUiState.Success(repository.getCoinDetail(coinId))
             } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Could not load coin"
-            } finally {
-                _isLoading.value = false
+                _uiState.value = CryptoDetailUiState.Error(e.message ?: "Could not load coin")
             }
         }
     }

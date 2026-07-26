@@ -1,10 +1,9 @@
 package com.josegonzalez.jetpackCrypto.ui.contract
 
-import androidx.lifecycle.LiveData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import kotlinx.coroutines.flow.StateFlow
 
 interface CryptoTopGainersContract {
-    val topGainers: LiveData<List<Coin>>
-    val isLoading: LiveData<Boolean>
+    val uiState: StateFlow<CryptoTopGainersUiState>
     fun onCoinSelected(coin: Coin)
 }
