@@ -1,6 +1,5 @@
 package com.josegonzalez.jetpackCrypto.ui.activities
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,20 +8,16 @@ import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
 import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
 import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
-import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
-import com.josegonzalez.jetpackCrypto.ui.screens.CryptoListScreen
+import com.josegonzalez.jetpackCrypto.ui.screens.CryptoTopGainersScreen
 import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoTopGainersViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoListViewModelFactory
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoTopGainersViewModelFactory
 
-class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
+class CryptoTopGainersActivity : AppCompatActivity(), CryptoNavigation {
 
-    private lateinit var listViewModel: CryptoListContract
-    private lateinit var gainersViewModel: CryptoTopGainersContract
+    private lateinit var viewModel: CryptoTopGainersContract
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,21 +25,16 @@ class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
         val database = CryptoDatabase.getInstance(applicationContext)
         val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
 
-        listViewModel = ViewModelProvider(
-            this,
-            CryptoListViewModelFactory(repository, this)
-        )[CryptoListViewModel::class.java]
-
-        gainersViewModel = ViewModelProvider(
+        viewModel = ViewModelProvider(
             this,
             CryptoTopGainersViewModelFactory(repository, this)
         )[CryptoTopGainersViewModel::class.java]
 
         setContent {
             JetpackCryptoTheme {
-                CryptoListScreen(
-                    listViewModel = listViewModel,
-                    gainersViewModel = gainersViewModel
+                CryptoTopGainersScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navigateBack() }
                 )
             }
         }
@@ -52,7 +42,7 @@ class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
 
     override fun navigateToDetail(coin: Coin) {
         startActivity(
-            Intent(this, CryptoDetailActivity::class.java).apply {
+            android.content.Intent(this, CryptoDetailActivity::class.java).apply {
                 putExtra(CryptoDetailActivity.EXTRA_COIN, coin)
             }
         )

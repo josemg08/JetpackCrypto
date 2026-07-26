@@ -6,4 +6,5 @@ import com.josegonzalez.jetpackCrypto.domain.model.Coin
 interface CryptoTopGainersContract {
     val topGainers: LiveData<List<Coin>>
     val isLoading: LiveData<Boolean>
+    fun onCoinSelected(coin: Coin)
 }
