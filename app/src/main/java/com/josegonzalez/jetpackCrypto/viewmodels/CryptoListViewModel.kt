@@ -15,14 +15,14 @@ class CryptoListViewModel(
     private val navigation: CryptoNavigation
 ) : ViewModel(), CryptoListContract {
 
-    private val _coins = MutableLiveData<List<Coin>>()
-    override val coins: LiveData<List<Coin>> = _coins
+    private val _coins = MutableLiveData<List<Coin>>() // ViewModel writes here
+    override val coins: LiveData<List<Coin>> = _coins  // Activity only sees this
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    override val isLoading: LiveData<Boolean> = _isLoading
+    private val _isLoading = MutableLiveData<Boolean>()     // ViewModel writes here
+    override val isLoading: LiveData<Boolean> = _isLoading  // Activity only sees this
 
-    private val _errorMessage = MutableLiveData<String?>()
-    override val errorMessage: LiveData<String?> = _errorMessage
+    private val _errorMessage = MutableLiveData<String?>()          // ViewModel writes here
+    override val errorMessage: LiveData<String?> = _errorMessage    // Activity only sees this
 
     override fun loadCoins() {
         viewModelScope.launch {
