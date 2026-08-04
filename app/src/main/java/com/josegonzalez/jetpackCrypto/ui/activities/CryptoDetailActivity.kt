@@ -15,8 +15,8 @@ import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoDetailViewModelFactory
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoDetailViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoDetailViewModelFactory
 
 class CryptoDetailActivity : AppCompatActivity(), CryptoNavigation {
 
