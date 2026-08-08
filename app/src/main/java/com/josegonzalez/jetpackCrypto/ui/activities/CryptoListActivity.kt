@@ -15,8 +15,8 @@ import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoPagingAdapter
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoListViewModelFactory
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoListViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoListViewModelFactory
 
 class CryptoListActivity : AppCompatActivity(), CryptoNavigation {
 

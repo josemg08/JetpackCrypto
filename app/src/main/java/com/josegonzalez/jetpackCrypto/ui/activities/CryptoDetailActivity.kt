@@ -8,6 +8,8 @@ import com.josegonzalez.jetpackCrypto.R
 import com.josegonzalez.jetpackCrypto.databinding.ActivityCryptoDetailBinding
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoDetailViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoDetailViewModelFactory
 
 class CryptoDetailActivity : AppCompatActivity(), CryptoNavigation {
 

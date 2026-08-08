@@ -1,4 +1,4 @@
-package com.josegonzalez.jetpackCrypto.ui.viewmodels
+package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
