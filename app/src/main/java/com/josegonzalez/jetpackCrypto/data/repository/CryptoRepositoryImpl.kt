@@ -5,6 +5,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.josegonzalez.jetpackCrypto.data.local.dao.CryptoDao
 import com.josegonzalez.jetpackCrypto.data.local.mapper.toDomain
 import com.josegonzalez.jetpackCrypto.data.remote.api.CryptoApiService
@@ -28,6 +30,9 @@ class CryptoRepositoryImpl(
             remoteMediator = CryptoRemoteMediator(apiService, dao),
             pagingSourceFactory = { dao.getCoinsAsPagingSource() }
         ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
+
+    override fun getTopGainers(): LiveData<List<Coin>> =
+        dao.getTopGainers().map { entities -> entities.map { it.toDomain() } }
 
     override suspend fun getCoinDetail(coinId: String): Coin =
         withContext(Dispatchers.IO) {
