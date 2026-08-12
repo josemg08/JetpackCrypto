@@ -1,4 +1,4 @@
-package com.josegonzalez.jetpackCrypto.ui.viewmodels
+package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,7 +9,7 @@ import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
 
 class CryptoTopGainersViewModel(
-    private val repository: CryptoRepository
+    repository: CryptoRepository
 ) : ViewModel(), CryptoTopGainersContract {
 
     override val topGainers: LiveData<List<Coin>> = repository.getTopGainers().asLiveData()

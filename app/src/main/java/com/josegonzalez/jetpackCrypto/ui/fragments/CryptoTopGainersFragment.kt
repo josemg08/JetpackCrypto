@@ -14,8 +14,8 @@ import com.josegonzalez.jetpackCrypto.databinding.FragmentTopGainersBinding
 import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoAdapter
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoTopGainersViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoTopGainersViewModelFactory
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoTopGainersViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoTopGainersViewModelFactory
 
 class CryptoTopGainersFragment : Fragment() {
 
@@ -25,11 +25,7 @@ class CryptoTopGainersFragment : Fragment() {
     private lateinit var viewModel: CryptoTopGainersContract
     private lateinit var adapter: CryptoAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTopGainersBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -37,7 +33,7 @@ class CryptoTopGainersFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val navigation = requireActivity() as CryptoNavigation
+        val navigation = requireParentFragment() as CryptoNavigation
         val database = CryptoDatabase.getInstance(requireContext())
         val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
         val factory = CryptoTopGainersViewModelFactory(repository)

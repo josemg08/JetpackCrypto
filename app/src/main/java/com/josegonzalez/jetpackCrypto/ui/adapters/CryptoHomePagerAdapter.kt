@@ -1,12 +1,11 @@
 package com.josegonzalez.jetpackCrypto.ui.adapters
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.josegonzalez.jetpackCrypto.ui.fragments.CryptoListTabFragment
 import com.josegonzalez.jetpackCrypto.ui.fragments.CryptoTopGainersFragment
 
-class CryptoHomePagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
+class CryptoHomePagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
 
     override fun getItemCount() = 2
 

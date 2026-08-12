@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <variable
@@ -22,7 +23,8 @@
                 android:id="@+id/iv_coin_image"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
-                android:contentDescription="Coin image" />
+                android:contentDescription="Coin image"
+                tools:src="@drawable/ic_launcher_monochrome"/>
 
             <TextView
                 android:id="@+id/tv_coin_name"
@@ -31,7 +33,8 @@
                 android:layout_marginTop="16dp"
                 android:text="@{coin.name}"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="CryptoNamer"/>
 
             <TextView
                 android:id="@+id/tv_coin_symbol"
@@ -39,7 +42,8 @@
                 android:layout_height="wrap_content"
                 android:text="@{coin.symbol}"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                tools:text="Crypto" />
 
             <TextView
                 android:id="@+id/tv_coin_price"
@@ -48,7 +52,8 @@
                 android:layout_marginTop="16dp"
                 android:text='@{String.format("$%.2f", coin.currentPriceUsd)}'
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="Price" />
 
             <TextView
                 android:id="@+id/tv_price_change"
@@ -56,7 +61,8 @@
                 android:layout_height="wrap_content"
                 android:text='@{String.format("%.2f%%", coin.priceChangePercentage24h)}'
                 android:textColor='@{coin.priceChangePercentage24h >= 0 ? @android:color/holo_green_dark : @android:color/holo_red_dark}'
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                tools:text="%" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -85,7 +91,8 @@
                         android:text='@{String.format("$%.2f", coin.high24h)}'
                         android:textColor="#00AA00"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:text="High price" />
 
                 </LinearLayout>
 
@@ -110,7 +117,8 @@
                         android:text='@{String.format("$%.2f", coin.low24h)}'
                         android:textColor="#CC0000"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:text="Low price" />
 
                 </LinearLayout>
 
@@ -123,7 +131,8 @@
                 android:layout_marginTop="24dp"
                 android:text='@{"Updated: " + coin.lastUpdated}'
                 android:textColor="@android:color/darker_gray"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                tools:text="Time of the last update" />
 
         </LinearLayout>
 

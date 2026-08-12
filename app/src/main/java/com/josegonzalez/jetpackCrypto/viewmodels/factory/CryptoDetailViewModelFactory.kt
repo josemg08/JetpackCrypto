@@ -1,10 +1,10 @@
-package com.josegonzalez.jetpackCrypto.ui.viewmodels.factory
+package com.josegonzalez.jetpackCrypto.viewmodels.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoDetailViewModel
 
 class CryptoDetailViewModelFactory(
     private val repository: CryptoRepository,

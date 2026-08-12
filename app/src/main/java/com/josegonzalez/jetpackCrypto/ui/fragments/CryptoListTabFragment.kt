@@ -15,8 +15,8 @@ import com.josegonzalez.jetpackCrypto.databinding.FragmentCryptoListTabBinding
 import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoPagingAdapter
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoListViewModelFactory
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoListViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoListViewModelFactory
 
 class CryptoListTabFragment : Fragment() {
 
@@ -26,11 +26,7 @@ class CryptoListTabFragment : Fragment() {
     private lateinit var viewModel: CryptoListContract
     private lateinit var adapter: CryptoPagingAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentCryptoListTabBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -38,7 +34,7 @@ class CryptoListTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val navigation = requireActivity() as CryptoNavigation
+        val navigation = requireParentFragment() as CryptoNavigation
         val database = CryptoDatabase.getInstance(requireContext())
         val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
         val factory = CryptoListViewModelFactory(repository, navigation)
@@ -61,7 +57,7 @@ class CryptoListTabFragment : Fragment() {
         binding.swipeRefreshLayout.setOnRefreshListener { adapter.refresh() }
 
         viewModel.coinsFlow.observe(viewLifecycleOwner) { pagingData ->
-            adapter.submitData(lifecycle, pagingData)
+            adapter.submitData(viewLifecycleOwner.lifecycle, pagingData)
         }
     }
 

@@ -23,12 +23,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.activities.CryptoListActivity" />
-
-        <activity
-            android:name=".ui.activities.CryptoDetailActivity"
-            android:parentActivityName=".ui.activities.CryptoListActivity" />
-
     </application>
 
 </manifest>
