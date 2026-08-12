@@ -11,7 +11,7 @@ import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 
 class CryptoListViewModel(
-    private val repository: CryptoRepository,
+    repository: CryptoRepository,
     private val navigation: CryptoNavigation
 ) : ViewModel(), CryptoListContract {
 
