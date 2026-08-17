@@ -63,7 +63,10 @@ fun CryptoTopGainersScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding)
             ) {
-                items(count = coins.size) { index ->
+                items(
+                    count = coins.size,
+                    key = { index -> coins[index].id }
+                ) { index ->
                     TopGainerItem(
                         rank = index + 1,
                         coin = coins[index],

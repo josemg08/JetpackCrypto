@@ -1,6 +1,7 @@
 package com.josegonzalez.jetpackCrypto.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -20,20 +22,57 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
+import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
+import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
+import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoDetailViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CryptoDetailScreen(coin: Coin, onNavigateBack: () -> Unit) {
+fun CryptoDetailScreen(
+    coinId: String,
+    onNavigateBack: () -> Unit
+) {
+    val context = LocalContext.current
+    val database = remember { CryptoDatabase.getInstance(context.applicationContext) }
+    val repository = remember { CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao()) }
+    
+    // We use a dummy navigation for the ViewModel as we handle navigation in the NavGraph
+    val dummyNavigation = object : CryptoNavigation {
+        override fun navigateToDetail(coin: Coin) {}
+        override fun navigateBack() { onNavigateBack() }
+    }
+
+    val factory = remember(repository) { CryptoDetailViewModelFactory(repository, dummyNavigation) }
+    val viewModel: CryptoDetailViewModel = viewModel(factory = factory)
+
+    val coin by viewModel.coin.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val errorMessage by viewModel.errorMessage.observeAsState()
+
+    LaunchedEffect(coinId) {
+        viewModel.loadCoin(coinId)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(coin.name) },
+                title = { Text(coin?.name ?: "Detail") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -45,43 +84,59 @@ fun CryptoDetailScreen(coin: Coin, onNavigateBack: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AsyncImage(
-                model = coin.imageUrl,
-                contentDescription = coin.name,
-                modifier = Modifier.size(80.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = coin.name, style = MaterialTheme.typography.headlineMedium)
-            Text(
-                text = coin.symbol,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "$${String.format("%.2f", coin.currentPriceUsd)}",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Text(
-                text = "${String.format("%.2f", coin.priceChangePercentage24h)}% (24h)",
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(16.dp))
-            DetailRow(label = "24h High", value = "$${String.format("%.2f", coin.high24h)}")
-            DetailRow(label = "24h Low", value = "$${String.format("%.2f", coin.low24h)}")
-            DetailRow(label = "Market Cap Rank", value = "#${coin.marketCapRank}")
-            DetailRow(label = "Last Updated", value = coin.lastUpdated.take(10))
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                )
+            } else {
+                coin?.let { CryptoDetailContent(it) }
+            }
         }
+    }
+}
+
+@Composable
+private fun CryptoDetailContent(coin: Coin) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AsyncImage(
+            model = coin.imageUrl,
+            contentDescription = coin.name,
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = coin.name, style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = coin.symbol,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "$${String.format("%.2f", coin.currentPriceUsd)}",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Text(
+            text = "${String.format("%.2f", coin.priceChangePercentage24h)}% (24h)",
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        HorizontalDivider()
+        Spacer(modifier = Modifier.height(16.dp))
+        DetailRow(label = "24h High", value = "$${String.format("%.2f", coin.high24h)}")
+        DetailRow(label = "24h Low", value = "$${String.format("%.2f", coin.low24h)}")
+        DetailRow(label = "Market Cap Rank", value = "#${coin.marketCapRank}")
+        DetailRow(label = "Last Updated", value = coin.lastUpdated.take(10))
     }
 }
 

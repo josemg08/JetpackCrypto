@@ -42,7 +42,8 @@ private val tabs = listOf("All Coins", "Top Gainers")
 @Composable
 fun CryptoListScreen(
     listViewModel: CryptoListContract,
-    gainersViewModel: CryptoTopGainersContract
+    gainersViewModel: CryptoTopGainersContract,
+    onCoinClick: (Coin) -> Unit
 ) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
@@ -62,15 +63,18 @@ fun CryptoListScreen(
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
-                0 -> CoinListPage(viewModel = listViewModel)
-                1 -> TopGainersPage(viewModel = gainersViewModel)
+                0 -> CoinListPage(viewModel = listViewModel, onCoinClick = onCoinClick)
+                1 -> TopGainersPage(viewModel = gainersViewModel, onCoinClick = onCoinClick)
             }
         }
     }
 }
 
 @Composable
-private fun CoinListPage(viewModel: CryptoListContract) {
+private fun CoinListPage(
+    viewModel: CryptoListContract,
+    onCoinClick: (Coin) -> Unit
+) {
     val coinsFlow = remember(viewModel) { viewModel.coinsFlow.asFlow() }
     val lazyPagingItems = coinsFlow.collectAsLazyPagingItems()
     val isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading
@@ -78,9 +82,12 @@ private fun CoinListPage(viewModel: CryptoListContract) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(count = lazyPagingItems.itemCount) { index ->
+            items(
+                count = lazyPagingItems.itemCount,
+                key = { index -> lazyPagingItems[index]?.id ?: index }
+            ) { index ->
                 lazyPagingItems[index]?.let { coin ->
-                    CoinItem(coin = coin, onClick = { viewModel.onCoinSelected(coin) })
+                    CoinItem(coin = coin, onClick = { onCoinClick(coin) })
                     HorizontalDivider()
                 }
             }
@@ -111,7 +118,10 @@ private fun CoinListPage(viewModel: CryptoListContract) {
 }
 
 @Composable
-private fun TopGainersPage(viewModel: CryptoTopGainersContract) {
+private fun TopGainersPage(
+    viewModel: CryptoTopGainersContract,
+    onCoinClick: (Coin) -> Unit
+) {
     val coins by viewModel.topGainers.observeAsState(emptyList())
 
     if (coins.isEmpty()) {
@@ -120,8 +130,11 @@ private fun TopGainersPage(viewModel: CryptoTopGainersContract) {
         }
     } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(count = coins.size) { index ->
-                CoinItem(coin = coins[index], onClick = { viewModel.onCoinSelected(coins[index]) })
+            items(
+                count = coins.size,
+                key = { index -> coins[index].id }
+            ) { index ->
+                CoinItem(coin = coins[index], onClick = { onCoinClick(coins[index]) })
                 HorizontalDivider()
             }
         }
