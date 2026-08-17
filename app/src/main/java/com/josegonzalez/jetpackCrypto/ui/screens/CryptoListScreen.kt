@@ -20,6 +20,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -37,6 +39,13 @@ import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
 import kotlinx.coroutines.launch
 
+/**
+ * Using @Immutable to help Compose compiler understand that these models won't change internally.
+ * In a real app, this annotation would be on the Domain Model itself or a UI Model wrapper.
+ */
+@Immutable
+data class CoinUiModel(val coin: Coin)
+
 private val tabs = listOf("All Coins", "Top Gainers")
 
 @Composable
@@ -45,15 +54,23 @@ fun CryptoListScreen(
     gainersViewModel: CryptoTopGainersContract,
     onCoinClick: (Coin) -> Unit
 ) {
+    // rememberPagerState is already an optimization, it remembers the state across recompositions.
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
+
+    // Using remember for the tab click lambdas to ensure they are stable.
+    val onTabClick = remember(pagerState, scope) {
+        { index: Int ->
+            scope.launch { pagerState.animateScrollToPage(index) }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = pagerState.currentPage) {
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = pagerState.currentPage == index,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                    onClick = { onTabClick(index) },
                     text = { Text(title) }
                 )
             }
@@ -75,19 +92,31 @@ private fun CoinListPage(
     viewModel: CryptoListContract,
     onCoinClick: (Coin) -> Unit
 ) {
+    // remember(viewModel) ensures we only create the flow once.
     val coinsFlow = remember(viewModel) { viewModel.coinsFlow.asFlow() }
     val lazyPagingItems = coinsFlow.collectAsLazyPagingItems()
-    val isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading
-    val error = lazyPagingItems.loadState.refresh as? LoadState.Error
+
+    // derivedStateOf is crucial here to prevent recomposition when loadState changes 
+    // unless the actual boolean value (isRefreshing) changes.
+    val isRefreshing by remember {
+        derivedStateOf { lazyPagingItems.loadState.refresh is LoadState.Loading }
+    }
+    
+    val error by remember {
+        derivedStateOf { lazyPagingItems.loadState.refresh as? LoadState.Error }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(
                 count = lazyPagingItems.itemCount,
+                // key is essential for LazyColumn performance.
                 key = { index -> lazyPagingItems[index]?.id ?: index }
             ) { index ->
                 lazyPagingItems[index]?.let { coin ->
-                    CoinItem(coin = coin, onClick = { onCoinClick(coin) })
+                    // Wrapping in a stable UI model (or ensuring Domain model stability).
+                    val uiModel = remember(coin) { CoinUiModel(coin) }
+                    CoinItem(coin = uiModel.coin, onClick = { onCoinClick(coin) })
                     HorizontalDivider()
                 }
             }
@@ -124,7 +153,12 @@ private fun TopGainersPage(
 ) {
     val coins by viewModel.topGainers.observeAsState(emptyList())
 
-    if (coins.isEmpty()) {
+    // derivedStateOf to prevent recomposition if the list is empty logic changes.
+    val isEmpty by remember {
+        derivedStateOf { coins.isEmpty() }
+    }
+
+    if (isEmpty) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Loading top gainers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -134,7 +168,9 @@ private fun TopGainersPage(
                 count = coins.size,
                 key = { index -> coins[index].id }
             ) { index ->
-                CoinItem(coin = coins[index], onClick = { onCoinClick(coins[index]) })
+                val coin = coins[index]
+                val uiModel = remember(coin) { CoinUiModel(coin) }
+                CoinItem(coin = uiModel.coin, onClick = { onCoinClick(coin) })
                 HorizontalDivider()
             }
         }
@@ -143,10 +179,13 @@ private fun TopGainersPage(
 
 @Composable
 internal fun CoinItem(coin: Coin, onClick: () -> Unit) {
+    // remember the click listener to keep it stable.
+    val currentOnClick = remember(onClick) { onClick }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = currentOnClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -164,15 +203,27 @@ internal fun CoinItem(coin: Coin, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        
+        // Complex UI logic like string formatting should be remembered.
+        val formattedPrice = remember(coin.currentPriceUsd) { 
+            "$${String.format("%.2f", coin.currentPriceUsd)}" 
+        }
+        val formattedPercentage = remember(coin.priceChangePercentage24h) { 
+            "${String.format("%.2f", coin.priceChangePercentage24h)}%" 
+        }
+        val percentageColor = remember(coin.priceChangePercentage24h) { 
+            if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
+        }
+
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "$${String.format("%.2f", coin.currentPriceUsd)}",
+                text = formattedPrice,
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "${String.format("%.2f", coin.priceChangePercentage24h)}%",
+                text = formattedPercentage,
                 style = MaterialTheme.typography.bodySmall,
-                color = if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
+                color = percentageColor
             )
         }
     }

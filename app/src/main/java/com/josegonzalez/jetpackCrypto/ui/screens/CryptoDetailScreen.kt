@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -31,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
@@ -49,21 +49,34 @@ fun CryptoDetailScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val database = remember { CryptoDatabase.getInstance(context.applicationContext) }
-    val repository = remember { CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao()) }
     
-    // We use a dummy navigation for the ViewModel as we handle navigation in the NavGraph
-    val dummyNavigation = object : CryptoNavigation {
-        override fun navigateToDetail(coin: Coin) {}
-        override fun navigateBack() { onNavigateBack() }
+    // Using remember for repository and database to avoid recreation.
+    val repository = remember(context) {
+        val database = CryptoDatabase.getInstance(context.applicationContext)
+        CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
+    }
+    
+    // remember the navigation callback to keep it stable.
+    val navigation = remember(onNavigateBack) {
+        object : CryptoNavigation {
+            override fun navigateToDetail(coin: Coin) {}
+            override fun navigateBack() { onNavigateBack() }
+        }
     }
 
-    val factory = remember(repository) { CryptoDetailViewModelFactory(repository, dummyNavigation) }
+    val factory = remember(repository, navigation) { 
+        CryptoDetailViewModelFactory(repository, navigation) 
+    }
     val viewModel: CryptoDetailViewModel = viewModel(factory = factory)
 
     val coin by viewModel.coin.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val errorMessage by viewModel.errorMessage.observeAsState()
+
+    // derivedStateOf for better performance on state checks.
+    val showLoading by remember { derivedStateOf { isLoading } }
+    val showError by remember { derivedStateOf { errorMessage != null } }
+    val showContent by remember { derivedStateOf { coin != null && !isLoading } }
 
     LaunchedEffect(coinId) {
         viewModel.loadCoin(coinId)
@@ -85,15 +98,15 @@ fun CryptoDetailScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (isLoading) {
+            if (showLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (errorMessage != null) {
+            } else if (showError) {
                 Text(
-                    text = errorMessage!!,
+                    text = errorMessage ?: "Error",
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center).padding(16.dp)
                 )
-            } else {
+            } else if (showContent) {
                 coin?.let { CryptoDetailContent(it) }
             }
         }
@@ -121,22 +134,28 @@ private fun CryptoDetailContent(coin: Coin) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "$${String.format("%.2f", coin.currentPriceUsd)}",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        Text(
-            text = "${String.format("%.2f", coin.priceChangePercentage24h)}% (24h)",
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
-        )
+        
+        val priceText = remember(coin.currentPriceUsd) { 
+            "$${String.format("%.2f", coin.currentPriceUsd)}" 
+        }
+        val changeText = remember(coin.priceChangePercentage24h) { 
+            "${String.format("%.2f", coin.priceChangePercentage24h)}% (24h)" 
+        }
+        val changeColor = remember(coin.priceChangePercentage24h) { 
+            if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000) 
+        }
+
+        Text(text = priceText, style = MaterialTheme.typography.headlineSmall)
+        Text(text = changeText, style = MaterialTheme.typography.bodyLarge, color = changeColor)
+        
         Spacer(modifier = Modifier.height(32.dp))
         HorizontalDivider()
         Spacer(modifier = Modifier.height(16.dp))
-        DetailRow(label = "24h High", value = "$${String.format("%.2f", coin.high24h)}")
-        DetailRow(label = "24h Low", value = "$${String.format("%.2f", coin.low24h)}")
-        DetailRow(label = "Market Cap Rank", value = "#${coin.marketCapRank}")
-        DetailRow(label = "Last Updated", value = coin.lastUpdated.take(10))
+        
+        DetailRow(label = "24h High", value = remember(coin.high24h) { "$${String.format("%.2f", coin.high24h)}" })
+        DetailRow(label = "24h Low", value = remember(coin.low24h) { "$${String.format("%.2f", coin.low24h)}" })
+        DetailRow(label = "Market Cap Rank", value = remember(coin.marketCapRank) { "#${coin.marketCapRank}" })
+        DetailRow(label = "Last Updated", value = remember(coin.lastUpdated) { coin.lastUpdated.take(10) })
     }
 }
 
