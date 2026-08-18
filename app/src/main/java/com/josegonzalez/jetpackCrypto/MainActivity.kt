@@ -3,7 +3,6 @@ package com.josegonzalez.jetpackCrypto
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase

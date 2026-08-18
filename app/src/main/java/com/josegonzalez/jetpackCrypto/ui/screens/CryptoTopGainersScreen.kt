@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,14 +55,18 @@ fun CryptoTopGainersScreen(
     ) { padding ->
         if (coins.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Loading top gainers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
             ) {
                 items(
                     count = coins.size,
@@ -109,7 +114,7 @@ private fun TopGainerItem(rank: Int, coin: Coin, onClick: () -> Unit) {
             )
         }
         Text(
-            text = "+${String.format("%.2f", coin.priceChangePercentage24h)}%",
+            text = String.format(Locale.US, "%.2f", coin.priceChangePercentage24h),
             style = MaterialTheme.typography.bodyLarge,
             color = Color(0xFF00C853)
         )

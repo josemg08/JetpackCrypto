@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
-import com.josegonzalez.jetpackCrypto.ui.screens.CryptoListScreen
+import com.josegonzalez.jetpackCrypto.ui.screens.cryptoListTabs.CryptoListTabsScreen
 import com.josegonzalez.jetpackCrypto.ui.screens.CryptoDetailScreen
 import com.josegonzalez.jetpackCrypto.ui.screens.SplashScreen
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
@@ -38,7 +38,7 @@ fun NavGraph(
             })
         }
         composable(Screen.CryptoList.route) {
-            CryptoListScreen(
+            CryptoListTabsScreen(
                 listViewModel = listViewModel,
                 gainersViewModel = gainersViewModel,
                 onCoinClick = { coin ->
