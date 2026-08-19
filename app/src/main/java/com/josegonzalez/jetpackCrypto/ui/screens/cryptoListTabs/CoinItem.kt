@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -93,25 +94,45 @@ fun CoinItem(
     }
 }
 
-private val defaultCoin = Coin(
-    id = "1",
-    name = "Bitcoin",
-    symbol = "BTC",
-    currentPriceUsd = 40000.0,
-    priceChangePercentage24h = 0.0,
-    high24h = 41000.0,
-    low24h = 39000.0,
-    marketCapRank = 1,
-    lastUpdated = "2023-09-01T12:00:00Z",
-    imageUrl = "https://example.com/btc.png"
-)
+@Preview
+@Composable
+fun CoinItemLowPricePreview() {
+    JetpackCryptoTheme {
+        CoinItem(
+            coin = Coin(
+                id = "1",
+                name = "Bitcoin",
+                symbol = "BTC",
+                currentPriceUsd = 40000.0,
+                priceChangePercentage24h = -1.0,
+                high24h = 41000.0,
+                low24h = 39000.0,
+                marketCapRank = 1,
+                lastUpdated = "2023-09-01T12:00:00Z",
+                imageUrl = "https://example.com/btc.png"
+            ),
+            onClick = {}
+        )
+    }
+}
 
 @Preview
 @Composable
-fun CoinItemPreview() {
+fun CoinItemHighPricePreview() {
     JetpackCryptoTheme {
         CoinItem(
-            coin = defaultCoin,
+            coin = Coin(
+                id = "1",
+                name = "Bitcoin",
+                symbol = "BTC",
+                currentPriceUsd = 40000.0,
+                priceChangePercentage24h = 1.0,
+                high24h = 41000.0,
+                low24h = 39000.0,
+                marketCapRank = 1,
+                lastUpdated = "2023-09-01T12:00:00Z",
+                imageUrl = "https://example.com/btc.png"
+            ),
             onClick = {}
         )
     }
