@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Jetpack Crypto</string>
     <string name="coin_image_description" translatable="false">JCoin image</string>
+    <string name="coin_default_detail">Detail</string>
+    <string name="back_button_description">Back</string>
+    <string name="screen_error_default_message">Error</string>
 </resources>

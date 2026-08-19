@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
+import java.util.Locale
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,7 +121,7 @@ private fun TopGainerItem(rank: Int, coin: Coin, onClick: () -> Unit) {
             )
         }
         Text(
-            text = "+${String.format("%.2f", coin.priceChangePercentage24h)}%",
+            text = String.format(Locale.US, "%.2f", coin.priceChangePercentage24h),
             style = MaterialTheme.typography.bodyLarge,
             color = Color(0xFF00C853)
         )
