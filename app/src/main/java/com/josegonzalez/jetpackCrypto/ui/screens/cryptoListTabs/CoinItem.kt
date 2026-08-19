@@ -17,7 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -31,13 +36,34 @@ fun CoinItem(
     coin: Coin,
     onClick: () -> Unit
 ) {
-    // remember the click listener to keep it stable.
     val currentOnClick = remember(onClick) { onClick }
+
+    val errorColor = MaterialTheme.colorScheme.error
+    val formattedPrice = remember(coin.currentPriceUsd) {
+        String.format(Locale.US, "%.2f", coin.currentPriceUsd)
+    }
+    val formattedPercentage = remember(coin.priceChangePercentage24h) {
+        String.format(Locale.US, "%.2f", coin.priceChangePercentage24h)
+    }
+    val percentageColor = remember(coin.priceChangePercentage24h) {
+        if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else errorColor
+    }
+    val priceDirection = remember(coin.priceChangePercentage24h) {
+        if (coin.priceChangePercentage24h >= 0) "up" else "down"
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
+            .semantics(mergeDescendants = true) {
+                testTagsAsResourceId = true
+                testTag = "coin_item_${coin.id}"
+                contentDescription =
+                    "${coin.name}, ${coin.symbol}, price $formattedPrice, " +
+                    "$formattedPercentage percent $priceDirection in the last 24 hours"
+                role = Role.Button
+            }
             .clickable(onClick = currentOnClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -46,49 +72,39 @@ fun CoinItem(
             model = coin.imageUrl,
             placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
             error = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = coin.name,
-            modifier = Modifier.size(40.dp)
+            contentDescription = null,
+            modifier = Modifier
+                .size(40.dp)
+                .semantics { testTag = "coin_image_${coin.id}" }
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = coin.name,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { testTag = "coin_name_${coin.id}" }
             )
             Text(
                 text = coin.symbol,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { testTag = "coin_symbol_${coin.id}" }
             )
-        }
-
-        val errorColor = MaterialTheme.colorScheme.error
-        // Complex UI logic like string formatting should be remembered.
-        val formattedPrice = remember(coin.currentPriceUsd) {
-            String.format(Locale.US, "%.2f", coin.currentPriceUsd)
-        }
-        val formattedPercentage = remember(coin.priceChangePercentage24h) {
-            String.format(Locale.US, "%.2f", coin.priceChangePercentage24h)
-        }
-        val percentageColor = remember(coin.priceChangePercentage24h) {
-            if (coin.priceChangePercentage24h >= 0) {
-                Color(0xFF00C853)
-            } else {
-                errorColor
-            }
         }
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = formattedPrice,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics { testTag = "coin_price_${coin.id}" }
             )
             Text(
                 text = formattedPercentage,
                 style = MaterialTheme.typography.bodySmall,
-                color = percentageColor
+                color = percentageColor,
+                modifier = Modifier.semantics { testTag = "coin_price_change_${coin.id}" }
             )
         }
     }
