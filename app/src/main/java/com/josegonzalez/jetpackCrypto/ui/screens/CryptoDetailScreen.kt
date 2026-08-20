@@ -28,16 +28,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import java.util.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTokens
+import ar.imagin.kouraikhryseai.compose.ui.theme.extendedColors
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.R
 import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
@@ -137,37 +139,7 @@ private fun CryptoDetailContent(coin: Coin) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CoinDisplay(
-            modifier = Modifier
-                .fillMaxWidth(),
-            coin = coin
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        val errorColor = MaterialTheme.colorScheme.error
-        val priceText = remember(coin.currentPriceUsd) {
-            "$${String.format(Locale.US, "%.2f", coin.currentPriceUsd)}"
-        }
-        val changeText = remember(coin.priceChangePercentage24h) {
-            "${String.format(Locale.US, "%.2f", coin.priceChangePercentage24h)}% (24h)"
-        }
-        val changeColor = remember(coin.priceChangePercentage24h) {
-            if (coin.priceChangePercentage24h >= 0) {
-                Color(0xFF00C853)
-            } else {
-                errorColor
-            }
-        }
-
-        Text(
-            text = priceText,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = changeText,
-            style = MaterialTheme.typography.bodyLarge,
-            color = changeColor)
+        CoinDisplayHeader(coin = coin)
 
         Spacer(modifier = Modifier.height(32.dp))
         HorizontalDivider()
@@ -182,6 +154,64 @@ private fun CryptoDetailContent(coin: Coin) {
         })
         DetailRow(label = "Market Cap Rank", value = remember(coin.marketCapRank) { "#${coin.marketCapRank}" })
         DetailRow(label = "Last Updated", value = remember(coin.lastUpdated) { coin.lastUpdated.take(10) })
+    }
+}
+
+@Composable
+private fun CoinDisplayHeader(
+    coin: Coin
+) {
+    ConstraintLayout(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        val (coinDisplay, priceTextRef, changeTextRef) = createRefs()
+
+        CoinDisplay(
+            modifier = Modifier
+                .constrainAs(coinDisplay) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+            coin = coin
+        )
+
+        val errorColor = MaterialTheme.colorScheme.error
+        val successColor = KTokens.extendedColors.success
+        val priceText = remember(coin.currentPriceUsd) {
+            "$${String.format(Locale.US, "%.2f", coin.currentPriceUsd)}"
+        }
+        val changeText = remember(coin.priceChangePercentage24h) {
+            "${String.format(Locale.US, "%.2f", coin.priceChangePercentage24h)}% (24h)"
+        }
+        val changeColor = remember(coin.priceChangePercentage24h) {
+            if (coin.priceChangePercentage24h >= 0) {
+                successColor
+            } else {
+                errorColor
+            }
+        }
+
+        Text(
+            text = priceText,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.constrainAs(priceTextRef) {
+                top.linkTo(coinDisplay.bottom, margin = 24.dp)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            }
+        )
+        Text(
+            text = changeText,
+            style = MaterialTheme.typography.bodyLarge,
+            color = changeColor,
+            modifier = Modifier.constrainAs(changeTextRef) {
+                top.linkTo(priceTextRef.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            }
+        )
     }
 }
 
@@ -263,6 +293,16 @@ private fun CryptoDetailContentPreview() {
 private fun CoinDisplayPreview() {
     KTheme(darkTheme = true) {
         CoinDisplay(
+            coin = defaultCoin
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@Composable
+private fun CoinDisplayHeaderPreview() {
+    KTheme(darkTheme = true) {
+        CoinDisplayHeader(
             coin = defaultCoin
         )
     }
