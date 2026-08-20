@@ -1,4 +1,4 @@
-package com.josegonzalez.jetpackCrypto.ui.screens.cryptoListTabs
+package com.josegonzalez.jetpackCrypto.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -24,7 +23,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
 import ar.imagin.kouraikhryseai.compose.ui.theme.KTokens
 import ar.imagin.kouraikhryseai.compose.ui.theme.extendedColors

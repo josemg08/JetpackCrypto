@@ -15,6 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -43,6 +45,7 @@ fun CryptoListTabsScreen(
 ) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState()
@@ -71,6 +74,14 @@ fun CryptoListTabsScreen(
         }
     }
 
+    val onError = remember(scope, snackBarHostState) {
+        { message: String ->
+            scope.launch {
+                snackBarHostState.showSnackbar(message)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,7 +95,8 @@ fun CryptoListTabsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { innerPadding ->
         Column(modifier = Modifier
             .fillMaxSize()
@@ -103,8 +115,17 @@ fun CryptoListTabsScreen(
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 -> CoinListPage(viewModel = listViewModel, onCoinClick = onCoinClick)
-                    1 -> TopGainersPage(viewModel = gainersViewModel, onCoinClick = onCoinClick)
+                    0 -> CoinListPage(
+                        viewModel = listViewModel,
+                        onCoinClick = onCoinClick,
+                        onError = { onError(it) }
+                    )
+
+                    1 -> TopGainersPage(
+                        viewModel = gainersViewModel,
+                        onCoinClick = onCoinClick,
+                        onError = { onError(it) }
+                    )
                 }
             }
         }

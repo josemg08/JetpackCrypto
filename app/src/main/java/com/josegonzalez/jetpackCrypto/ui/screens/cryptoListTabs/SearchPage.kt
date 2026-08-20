@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.ui.components.CoinItem
 import com.josegonzalez.jetpackCrypto.ui.contract.SearchContract
 
 @Composable

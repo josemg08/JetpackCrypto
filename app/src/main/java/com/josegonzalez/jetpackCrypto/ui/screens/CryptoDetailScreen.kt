@@ -20,12 +20,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +51,7 @@ import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
 import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
 import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.ui.components.EmptyErrorContent
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailUiState
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
@@ -58,6 +64,7 @@ fun CryptoDetailScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Using remember for repository and database to avoid recreation.
     val repository = remember(context) {
@@ -81,12 +88,26 @@ fun CryptoDetailScreen(
     val viewModel: CryptoDetailViewModel = viewModel(factory = factory)
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var lastCoin by remember { mutableStateOf<Coin?>(null) }
 
     LaunchedEffect(coinId) {
         viewModel.loadCoin(coinId)
     }
 
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is CryptoDetailUiState.Success -> {
+                lastCoin = state.coin
+            }
+            is CryptoDetailUiState.Error -> {
+                snackbarHostState.showSnackbar(state.message)
+            }
+            else -> {}
+        }
+    }
+
     val coinName = (uiState as? CryptoDetailUiState.Success)?.coin?.name
+        ?: lastCoin?.name
         ?: stringResource(R.string.coin_default_detail)
 
     Scaffold(
@@ -102,7 +123,8 @@ fun CryptoDetailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -110,21 +132,26 @@ fun CryptoDetailScreen(
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(padding)
         ) {
-            when (uiState) {
+            when (val state = uiState) {
                 is CryptoDetailUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    if (lastCoin == null) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    } else {
+                        CryptoDetailContent(lastCoin!!)
+                    }
                 }
                 is CryptoDetailUiState.Error -> {
-                    Text(
-                        text = (uiState as CryptoDetailUiState.Error).message,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp)
-                    )
+                    if (lastCoin == null) {
+                        EmptyErrorContent(
+                            message = state.message,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        CryptoDetailContent(lastCoin!!)
+                    }
                 }
                 is CryptoDetailUiState.Success -> {
-                    CryptoDetailContent((uiState as CryptoDetailUiState.Success).coin)
+                    CryptoDetailContent(state.coin)
                 }
             }
         }
