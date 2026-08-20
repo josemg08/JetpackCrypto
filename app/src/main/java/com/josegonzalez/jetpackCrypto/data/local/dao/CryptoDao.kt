@@ -17,6 +17,9 @@ interface CryptoDao {
     @Query("SELECT * FROM coins ORDER BY price_change_24h DESC LIMIT 10")
     fun getTopGainers(): Flow<List<CoinEntity>>
 
+    @Query("SELECT * FROM coins WHERE name LIKE '%' || :query || '%' OR symbol LIKE '%' || :query || '%' ORDER BY market_cap_rank ASC")
+    fun searchCoins(query: String): Flow<List<CoinEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(coins: List<CoinEntity>)
 

@@ -32,6 +32,9 @@ class CryptoRepositoryImpl(
     override fun getTopGainers(): Flow<List<Coin>> =
         dao.getTopGainers().map { entities -> entities.map { it.toDomain() } }
 
+    override fun searchCoins(query: String): Flow<List<Coin>> =
+        dao.searchCoins(query).map { entities -> entities.map { it.toDomain() } }
+
     override suspend fun getCoinDetail(coinId: String): Coin =
         withContext(Dispatchers.IO) {
             apiService.getCoinDetail(coinId).toDomain()

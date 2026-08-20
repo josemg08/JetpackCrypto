@@ -43,8 +43,7 @@ fun NavGraph(
                 gainersViewModel = gainersViewModel,
                 onCoinClick = { coin ->
                     navController.navigate(Screen.CryptoDetail.createRoute(coin.id))
-                },
-                onSearchClick = { /* TODO: open search fragment */ }
+                }
             )
         }
         composable(
