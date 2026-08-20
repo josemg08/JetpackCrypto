@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import java.util.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.R
 import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
@@ -45,7 +46,6 @@ import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailUiState
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoDetailViewModelFactory
 
@@ -251,7 +251,7 @@ private val defaultCoin = Coin(
 @Preview
 @Composable
 private fun CryptoDetailContentPreview() {
-    JetpackCryptoTheme {
+    KTheme(darkTheme = true) {
         CryptoDetailContent(
             coin = defaultCoin
         )
@@ -261,7 +261,7 @@ private fun CryptoDetailContentPreview() {
 @Preview
 @Composable
 private fun CoinDisplayPreview() {
-    JetpackCryptoTheme {
+    KTheme(darkTheme = true) {
         CoinDisplay(
             coin = defaultCoin
         )

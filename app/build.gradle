@@ -43,7 +43,6 @@ dependencies {
     // Core
     implementation libs.androidx.core.ktx.v1131
     implementation libs.androidx.appcompat.v170
-    implementation libs.material.v1120
     implementation libs.androidx.constraintlayout
     implementation libs.androidx.swiperefreshlayout
 
@@ -107,5 +106,5 @@ dependencies {
     androidTestImplementation libs.androidx.espresso.core.v361
 
     // KouraiKhryseai
-    //implementation libs.kouraiKhryseai
+    implementation libs.kouraiKhryseai
 }

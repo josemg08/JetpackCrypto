@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
 import com.josegonzalez.jetpackCrypto.R
-import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -58,7 +58,7 @@ private fun SplashScreenContent() {
 @Preview
 @Composable
 private fun SplashScreenPreview() {
-    JetpackCryptoTheme {
+    KTheme(darkTheme = true) {
         SplashScreenContent()
     }
 }

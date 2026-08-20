@@ -25,10 +25,12 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTokens
+import ar.imagin.kouraikhryseai.compose.ui.theme.extendedColors
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.R
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
-import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
 import java.util.Locale
 
 @Composable
@@ -39,6 +41,7 @@ fun CoinItem(
     val currentOnClick = remember(onClick) { onClick }
 
     val errorColor = MaterialTheme.colorScheme.error
+    val successColor = KTokens.extendedColors.success
     val formattedPrice = remember(coin.currentPriceUsd) {
         String.format(Locale.US, "%.2f", coin.currentPriceUsd)
     }
@@ -46,7 +49,11 @@ fun CoinItem(
         String.format(Locale.US, "%.2f", coin.priceChangePercentage24h)
     }
     val percentageColor = remember(coin.priceChangePercentage24h) {
-        if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else errorColor
+        if (coin.priceChangePercentage24h >= 0) {
+            successColor
+        } else {
+            errorColor
+        }
     }
     val priceDirection = remember(coin.priceChangePercentage24h) {
         if (coin.priceChangePercentage24h >= 0) "up" else "down"
@@ -65,7 +72,10 @@ fun CoinItem(
                 role = Role.Button
             }
             .clickable(onClick = currentOnClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(
+                horizontal = KTokens.dimensions.plasticSize.plastic16,
+                vertical = KTokens.dimensions.plasticSize.plastic12
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -74,10 +84,10 @@ fun CoinItem(
             error = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = null,
             modifier = Modifier
-                .size(40.dp)
+                .size(KTokens.dimensions.plasticSize.plastic37)
                 .semantics { testTag = "coin_image_${coin.id}" }
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(KTokens.dimensions.plasticSize.plastic12))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = coin.name,
@@ -113,7 +123,7 @@ fun CoinItem(
 @Preview
 @Composable
 fun CoinItemLowPricePreview() {
-    JetpackCryptoTheme {
+    KTheme(darkTheme = true) {
         CoinItem(
             coin = Coin(
                 id = "1",
@@ -135,7 +145,7 @@ fun CoinItemLowPricePreview() {
 @Preview
 @Composable
 fun CoinItemHighPricePreview() {
-    JetpackCryptoTheme {
+    KTheme(darkTheme = true) {
         CoinItem(
             coin = Coin(
                 id = "1",

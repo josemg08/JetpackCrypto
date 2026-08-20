@@ -5,13 +5,13 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import ar.imagin.kouraikhryseai.compose.ui.theme.KTheme
 import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
 import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
 import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.navigation.NavGraph
-import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoTopGainersViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.SearchViewModel
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         )[SearchViewModel::class.java]
 
         setContent {
-            JetpackCryptoTheme {
+            KTheme(darkTheme = true) {
                 val navController = rememberNavController()
                 NavGraph(
                     navController = navController,
