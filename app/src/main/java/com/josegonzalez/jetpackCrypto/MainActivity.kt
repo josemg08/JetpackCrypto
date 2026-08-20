@@ -14,8 +14,10 @@ import com.josegonzalez.jetpackCrypto.ui.navigation.NavGraph
 import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoListViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoTopGainersViewModel
+import com.josegonzalez.jetpackCrypto.ui.viewmodels.SearchViewModel
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoListViewModelFactory
 import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoTopGainersViewModelFactory
+import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.SearchViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,13 +43,19 @@ class MainActivity : AppCompatActivity() {
             CryptoTopGainersViewModelFactory(repository, dummyNavigation)
         )[CryptoTopGainersViewModel::class.java]
 
+        val searchViewModel = ViewModelProvider(
+            this,
+            SearchViewModelFactory(repository)
+        )[SearchViewModel::class.java]
+
         setContent {
             JetpackCryptoTheme {
                 val navController = rememberNavController()
                 NavGraph(
                     navController = navController,
                     listViewModel = listViewModel,
-                    gainersViewModel = gainersViewModel
+                    gainersViewModel = gainersViewModel,
+                    searchViewModel = searchViewModel
                 )
             }
         }

@@ -46,9 +46,8 @@ fun CoinListPage(
                 key = { index -> lazyPagingItems[index]?.id ?: index }
             ) { index ->
                 lazyPagingItems[index]?.let { coin ->
-                    // Wrapping in a stable UI model (or ensuring Domain model stability).
-                    val uiModel = remember(coin) { CoinUiModel(coin) }
-                    CoinItem(coin = uiModel.coin, onClick = { onCoinClick(coin) })
+                    val uiModel = remember(coin) { coin }
+                    CoinItem(coin = uiModel, onClick = { onCoinClick(coin) })
                     HorizontalDivider()
                 }
             }

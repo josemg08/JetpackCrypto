@@ -11,20 +11,14 @@ import com.josegonzalez.jetpackCrypto.ui.screens.CryptoDetailScreen
 import com.josegonzalez.jetpackCrypto.ui.screens.SplashScreen
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
-
-sealed class Screen(val route: String) {
-    object Splash : Screen("splash")
-    object CryptoList : Screen("crypto_list")
-    object CryptoDetail : Screen("crypto_detail/{coinId}") {
-        fun createRoute(coinId: String) = "crypto_detail/$coinId"
-    }
-}
+import com.josegonzalez.jetpackCrypto.ui.contract.SearchContract
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
     listViewModel: CryptoListContract,
-    gainersViewModel: CryptoTopGainersContract
+    gainersViewModel: CryptoTopGainersContract,
+    searchViewModel: SearchContract
 ) {
     NavHost(
         navController = navController,
@@ -41,6 +35,7 @@ fun NavGraph(
             CryptoListTabsScreen(
                 listViewModel = listViewModel,
                 gainersViewModel = gainersViewModel,
+                searchViewModel = searchViewModel,
                 onCoinClick = { coin ->
                     navController.navigate(Screen.CryptoDetail.createRoute(coin.id))
                 }

@@ -1,7 +1,5 @@
 package com.josegonzalez.jetpackCrypto.ui.screens.cryptoListTabs
 
-import android.os.Build
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,33 +10,27 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
-import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersUiState
+import com.josegonzalez.jetpackCrypto.ui.contract.SearchContract
+import com.josegonzalez.jetpackCrypto.ui.contract.SearchEffect
 import kotlinx.coroutines.launch
-
-/**
- * Using @Immutable to help Compose compiler understand that these models won't change internally.
- * In a real app, this annotation would be on the Domain Model itself or a UI Model wrapper.
- */
-@Immutable
-data class CoinUiModel(val coin: Coin)
 
 private val tabs = listOf("All Coins", "Top Gainers")
 
@@ -47,34 +39,30 @@ private val tabs = listOf("All Coins", "Top Gainers")
 fun CryptoListTabsScreen(
     listViewModel: CryptoListContract,
     gainersViewModel: CryptoTopGainersContract,
+    searchViewModel: SearchContract,
     onCoinClick: (Coin) -> Unit
 ) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
 
-    val gainersState by gainersViewModel.uiState.collectAsStateWithLifecycle()
+    val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState()
 
-    val activity = LocalActivity.current as FragmentActivity
-    val currentOnCoinClick by rememberUpdatedState(onCoinClick)
-
-    // Listen for the coin the user picks inside the fragment and forward it to navigation.
-    DisposableEffect(Unit) {
-        activity.supportFragmentManager.setFragmentResultListener(
-            SearchBottomSheetFragment.RESULT_KEY,
-            activity
-        ) { _, bundle ->
-            val coin: Coin? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                bundle.getParcelable(SearchBottomSheetFragment.ARG_COIN, Coin::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                bundle.getParcelable(SearchBottomSheetFragment.ARG_COIN)
+    // Handle One-Time Navigation Effects
+    LaunchedEffect(Unit) {
+        searchViewModel.effect.collect { effect ->
+            when (effect) {
+                is SearchEffect.NavigateToDetail -> onCoinClick(effect.coin)
             }
-            coin?.let { currentOnCoinClick(it) }
         }
-        onDispose {
-            activity.supportFragmentManager.clearFragmentResultListener(
-                SearchBottomSheetFragment.RESULT_KEY
-            )
+    }
+
+    // Sync BottomSheet sheetState with ViewModel showSearchSheet state
+    LaunchedEffect(searchUiState.showSearchSheet) {
+        if (searchUiState.showSearchSheet) {
+            sheetState.show()
+        } else {
+            sheetState.hide()
         }
     }
 
@@ -89,10 +77,7 @@ fun CryptoListTabsScreen(
             TopAppBar(
                 title = { Text("Crypto") },
                 actions = {
-                    IconButton(onClick = {
-                        SearchBottomSheetFragment.newInstance()
-                            .show(activity.supportFragmentManager, SearchBottomSheetFragment.TAG)
-                    }) {
+                    IconButton(onClick = { searchViewModel.onOpenSearch() }) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search"
@@ -102,7 +87,9 @@ fun CryptoListTabsScreen(
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
@@ -120,6 +107,18 @@ fun CryptoListTabsScreen(
                     0 -> CoinListPage(viewModel = listViewModel, onCoinClick = onCoinClick)
                     1 -> TopGainersPage(viewModel = gainersViewModel, onCoinClick = onCoinClick)
                 }
+            }
+        }
+
+        if (searchUiState.showSearchSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { searchViewModel.onDismissSearch() },
+                sheetState = sheetState
+            ) {
+                SearchPage(
+                    viewModel = searchViewModel,
+                    onCoinClick = { coin -> searchViewModel.onCoinSelected(coin) }
+                )
             }
         }
     }

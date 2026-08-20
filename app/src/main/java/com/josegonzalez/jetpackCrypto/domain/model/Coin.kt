@@ -2,7 +2,9 @@ package com.josegonzalez.jetpackCrypto.domain.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class Coin(
     val id: String,
     val symbol: String,

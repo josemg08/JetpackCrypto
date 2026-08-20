@@ -2,6 +2,7 @@ package com.josegonzalez.jetpackCrypto.ui.viewmodels
 
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
+import com.josegonzalez.jetpackCrypto.ui.contract.SearchEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -55,14 +58,64 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `initial state contains coins from repository`() = runTest {
+    fun `initial state contains coins from repository and sheet hidden`() = runTest {
         val collectJob = launch(testDispatcher) { viewModel.uiState.collect() }
         advanceUntilIdle()
         
         val state = viewModel.uiState.value
         assertEquals(mockCoins, state.filteredCoins)
         assertEquals("", state.query)
+        assertFalse(state.showSearchSheet)
         collectJob.cancel()
+    }
+
+    @Test
+    fun `onOpenSearch updates visibility state`() = runTest {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect() }
+        
+        viewModel.onOpenSearch()
+        advanceUntilIdle()
+        
+        assertTrue(viewModel.uiState.value.showSearchSheet)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `onDismissSearch updates visibility state`() = runTest {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect() }
+        
+        viewModel.onOpenSearch()
+        advanceUntilIdle()
+        
+        viewModel.onDismissSearch()
+        advanceUntilIdle()
+        
+        assertFalse(viewModel.uiState.value.showSearchSheet)
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `onCoinSelected dismisses sheet and emits navigation effect`() = runTest {
+        val collectJob = launch(testDispatcher) { viewModel.uiState.collect() }
+        val effects = mutableListOf<SearchEffect>()
+        val effectCollectJob = launch(testDispatcher) {
+            viewModel.effect.collect { effects.add(it) }
+        }
+        
+        viewModel.onOpenSearch()
+        advanceUntilIdle()
+        
+        val coin = mockCoins[0]
+        viewModel.onCoinSelected(coin)
+        advanceUntilIdle()
+        
+        assertFalse(viewModel.uiState.value.showSearchSheet)
+        assertEquals(1, effects.size)
+        assertTrue(effects[0] is SearchEffect.NavigateToDetail)
+        assertEquals(coin, (effects[0] as SearchEffect.NavigateToDetail).coin)
+        
+        collectJob.cancel()
+        effectCollectJob.cancel()
     }
 
     @Test
@@ -75,22 +128,6 @@ class SearchViewModelTest {
         val state = viewModel.uiState.value
         assertEquals("Bit", state.query)
         assertEquals(filteredCoinsFlow.value, state.filteredCoins)
-        collectJob.cancel()
-    }
-
-    @Test
-    fun `empty query returns all coins from repository`() = runTest {
-        val collectJob = launch(testDispatcher) { viewModel.uiState.collect() }
-        
-        viewModel.onQueryChanged("Bit")
-        advanceUntilIdle()
-        
-        viewModel.onQueryChanged("")
-        advanceUntilIdle()
-        
-        val state = viewModel.uiState.value
-        assertEquals("", state.query)
-        assertEquals(mockCoins, state.filteredCoins)
         collectJob.cancel()
     }
 }

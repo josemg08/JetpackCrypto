@@ -50,8 +50,8 @@ fun TopGainersPage(
                     key = { index -> coins[index].id }
                 ) { index ->
                     val coin = coins[index]
-                    val uiModel = remember(coin) { CoinUiModel(coin) }
-                    CoinItem(coin = uiModel.coin, onClick = { onCoinClick(coin) })
+                    val uiModel = remember(coin) { coin }
+                    CoinItem(coin = uiModel, onClick = { onCoinClick(coin) })
                     HorizontalDivider()
                 }
             }
