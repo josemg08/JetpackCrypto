@@ -4,13 +4,32 @@ import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import com.josegonzalez.jetpackCrypto.viewmodels.CryptoDetailViewModel
 import com.josegonzalez.jetpackCrypto.viewmodels.CryptoListViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ViewModelFactoryTest {
 
+    private val testDispatcher = UnconfinedTestDispatcher()
     private val repository = FakeCryptoRepository()
     private val navigation = FakeCryptoNavigation()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     @Test
     fun `CryptoListViewModelFactory creates CryptoListViewModel`() {

@@ -1,12 +1,15 @@
 package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.paging.PagingData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -82,7 +85,7 @@ class CryptoDetailViewModelTest {
     @Test
     fun `loadCoin error with null message setsDefaultErrorMessage`() {
         val repository = object : CryptoRepository {
-            override suspend fun getCoins(page: Int, perPage: Int): List<Coin> = throw Exception()
+            override fun getCoinsPaged(): Flow<PagingData<Coin>> = emptyFlow()
             override suspend fun getCoinDetail(coinId: String): Coin = throw Exception()
         }
         val viewModel = CryptoDetailViewModel(repository, navigation)
