@@ -30,14 +30,14 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -87,6 +87,8 @@ dependencies {
 
     // Tests
     testImplementation libs.junit
+    testImplementation libs.androidx.arch.core.testing
+    testImplementation libs.kotlinx.coroutines.test
     androidTestImplementation libs.androidx.junit.v121
     androidTestImplementation libs.androidx.espresso.core.v361
 }
