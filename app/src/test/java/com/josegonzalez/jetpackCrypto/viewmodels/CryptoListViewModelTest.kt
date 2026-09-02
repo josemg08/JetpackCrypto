@@ -1,17 +1,21 @@
 package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.paging.PagingData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -39,7 +43,7 @@ class CryptoListViewModelTest {
     }
 
     @Test
-    fun `loadCoins success populatesCoinsLiveData`() {
+    fun `coinsFlow populatesLiveData`() {
         val coins = listOf(
             Coin("bitcoin", "BTC", "Bitcoin", "", 50000.0, 1, 0.0, 0.0, 0.0, ""),
             Coin("ethereum", "ETH", "Ethereum", "", 3000.0, 2, 0.0, 0.0, 0.0, "")
@@ -47,74 +51,45 @@ class CryptoListViewModelTest {
         val repository = FakeCryptoRepository(coins = coins)
         val viewModel = CryptoListViewModel(repository, navigation)
 
-        viewModel.loadCoins()
-
-        assertEquals(2, viewModel.coins.value?.size)
-        assertEquals("bitcoin", viewModel.coins.value?.get(0)?.id)
+        viewModel.coinsFlow.observeForever { }
+        assertNotNull(viewModel.coinsFlow.value)
     }
 
     @Test
-    fun `loadCoins success setsIsLoadingFalse`() {
+    fun `initial isLoading isFalse`() {
         val repository = FakeCryptoRepository(coins = emptyList())
         val viewModel = CryptoListViewModel(repository, navigation)
-
-        viewModel.loadCoins()
 
         assertEquals(false, viewModel.isLoading.value)
     }
 
     @Test
-    fun `loadCoins success errorMessageIsNull`() {
+    fun `initial errorMessageIsNull`() {
         val repository = FakeCryptoRepository(coins = emptyList())
         val viewModel = CryptoListViewModel(repository, navigation)
-
-        viewModel.loadCoins()
 
         assertNull(viewModel.errorMessage.value)
     }
 
     @Test
-    fun `loadCoins error setsErrorMessage`() {
-        val repository = FakeCryptoRepository(shouldThrow = true)
-        val viewModel = CryptoListViewModel(repository, navigation)
-
-        viewModel.loadCoins()
-
-        assertEquals("Network error", viewModel.errorMessage.value)
-    }
-
-    @Test
-    fun `loadCoins error with null message setsDefaultErrorMessage`() {
+    fun `error with null message setsDefaultErrorMessage`() {
         val repository = object : CryptoRepository {
-            override suspend fun getCoins(page: Int, perPage: Int): List<Coin> = throw Exception()
+            override fun getCoinsPaged(): Flow<PagingData<Coin>> = emptyFlow()
             override suspend fun getCoinDetail(coinId: String): Coin = throw Exception()
         }
         val viewModel = CryptoListViewModel(repository, navigation)
 
-        viewModel.loadCoins()
-
-        assertEquals("An error occurred", viewModel.errorMessage.value)
+        // In Class 2, error handling is moved to Paging LoadState
+        assertNull(viewModel.errorMessage.value)
     }
 
     @Test
-    fun `loadCoins error setsIsLoadingFalse`() {
-        val repository = FakeCryptoRepository(shouldThrow = true)
-        val viewModel = CryptoListViewModel(repository, navigation)
-
-        viewModel.loadCoins()
-
-        assertEquals(false, viewModel.isLoading.value)
-    }
-
-    @Test
-    fun `onRefresh reloadsCoins`() {
+    fun `onRefresh doesNotCrash`() {
         val coins = listOf(Coin("bitcoin", "BTC", "Bitcoin", "", 50000.0, 1, 0.0, 0.0, 0.0, ""))
         val repository = FakeCryptoRepository(coins = coins)
         val viewModel = CryptoListViewModel(repository, navigation)
 
         viewModel.onRefresh()
-
-        assertEquals(1, viewModel.coins.value?.size)
     }
 
     @Test

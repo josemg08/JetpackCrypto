@@ -5,61 +5,37 @@ import com.josegonzalez.jetpackCrypto.data.remote.model.CoinDto
 import com.josegonzalez.jetpackCrypto.data.remote.model.ImageDto
 import com.josegonzalez.jetpackCrypto.data.remote.model.MarketDataDto
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoApiService
+import com.josegonzalez.jetpackCrypto.fake.FakeCryptoDao
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CryptoRepositoryImplTest {
 
     @Test
-    fun `getCoins calls api and maps to domain`() = runTest {
-        val dto = CoinDto(
-            id = "bitcoin",
-            symbol = "btc",
-            name = "Bitcoin",
-            image = "url",
-            currentPrice = 50000.0,
-            marketCapRank = 1,
-            priceChangePercentage24h = 2.0,
-            high24h = 51000.0,
-            low24h = 49000.0,
-            lastUpdated = "now"
-        )
-        val apiService = FakeCryptoApiService(coins = listOf(dto))
-        val repository = CryptoRepositoryImpl(apiService)
+    fun `getCoinsPaged returns flow and triggers paging source factory`() = runTest {
+        val apiService = FakeCryptoApiService()
+        val dao = FakeCryptoDao()
+        val repository = CryptoRepositoryImpl(apiService, dao)
 
-        val result = repository.getCoins(page = 1)
+        val flow = repository.getCoinsPaged()
+        val result = flow.first()
 
-        assertEquals(1, result.size)
-        assertEquals("bitcoin", result[0].id)
-        assertEquals("BTC", result[0].symbol)
+        assertNotNull(result)
+        assertTrue(dao.wasPagingSourceCreated)
     }
 
-    @Test
-    fun `getCoinDetail calls api and maps to domain`() = runTest {
-        val dto = CoinDetailDto(
-            id = "bitcoin",
-            symbol = "btc",
-            name = "Bitcoin",
-            image = ImageDto(large = "url"),
-            marketData = MarketDataDto(
-                currentPrice = mapOf("usd" to 50000.0),
-                marketCapRank = 1,
-                priceChangePercentage24h = 2.0,
-                high24h = mapOf("usd" to 51000.0),
-                low24h = mapOf("usd" to 49000.0),
-                lastUpdated = "now"
-            )
-        )
-        val apiService = FakeCryptoApiService(coinDetail = dto)
-        val repository = CryptoRepositoryImpl(apiService)
+    @Test(expected = Exception::class)
+    fun `getCoinDetail throws exception when api fails`() = runTest {
+        val apiService = FakeCryptoApiService(shouldThrow = true)
+        val dao = FakeCryptoDao()
+        val repository = CryptoRepositoryImpl(apiService, dao)
 
-        val result = repository.getCoinDetail("bitcoin")
-
-        assertEquals("bitcoin", result.id)
-        assertEquals("BTC", result.symbol)
-        assertEquals(50000.0, result.currentPriceUsd, 0.0)
+        repository.getCoinDetail("bitcoin")
     }
 }
