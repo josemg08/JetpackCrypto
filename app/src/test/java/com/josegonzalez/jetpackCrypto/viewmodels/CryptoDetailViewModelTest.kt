@@ -2,6 +2,7 @@ package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import kotlinx.coroutines.Dispatchers
@@ -76,6 +77,19 @@ class CryptoDetailViewModelTest {
         viewModel.loadCoin("bitcoin")
 
         assertEquals("Network error", viewModel.errorMessage.value)
+    }
+
+    @Test
+    fun `loadCoin error with null message setsDefaultErrorMessage`() {
+        val repository = object : CryptoRepository {
+            override suspend fun getCoins(page: Int, perPage: Int): List<Coin> = throw Exception()
+            override suspend fun getCoinDetail(coinId: String): Coin = throw Exception()
+        }
+        val viewModel = CryptoDetailViewModel(repository, navigation)
+
+        viewModel.loadCoin("bitcoin")
+
+        assertEquals("Could not load coin", viewModel.errorMessage.value)
     }
 
     @Test

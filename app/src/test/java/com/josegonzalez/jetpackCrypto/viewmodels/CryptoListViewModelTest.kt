@@ -2,6 +2,7 @@ package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import kotlinx.coroutines.Dispatchers
@@ -80,6 +81,19 @@ class CryptoListViewModelTest {
         viewModel.loadCoins()
 
         assertEquals("Network error", viewModel.errorMessage.value)
+    }
+
+    @Test
+    fun `loadCoins error with null message setsDefaultErrorMessage`() {
+        val repository = object : CryptoRepository {
+            override suspend fun getCoins(page: Int, perPage: Int): List<Coin> = throw Exception()
+            override suspend fun getCoinDetail(coinId: String): Coin = throw Exception()
+        }
+        val viewModel = CryptoListViewModel(repository, navigation)
+
+        viewModel.loadCoins()
+
+        assertEquals("An error occurred", viewModel.errorMessage.value)
     }
 
     @Test
