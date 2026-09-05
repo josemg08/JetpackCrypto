@@ -30,6 +30,17 @@ class CryptoRepositoryImplTest {
         assertTrue(dao.wasPagingSourceCreated)
     }
 
+    @Test
+    fun `getTopGainers returns live data from dao`() {
+        val apiService = FakeCryptoApiService()
+        val dao = FakeCryptoDao()
+        val repository = CryptoRepositoryImpl(apiService, dao)
+
+        val result = repository.getTopGainers()
+        
+        assertNotNull(result)
+    }
+
     @Test(expected = Exception::class)
     fun `getCoinDetail throws exception when api fails`() = runTest {
         val apiService = FakeCryptoApiService(shouldThrow = true)

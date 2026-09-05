@@ -1,6 +1,8 @@
 package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
@@ -75,6 +77,7 @@ class CryptoListViewModelTest {
     fun `error with null message setsDefaultErrorMessage`() {
         val repository = object : CryptoRepository {
             override fun getCoinsPaged(): Flow<PagingData<Coin>> = emptyFlow()
+            override fun getTopGainers(): LiveData<List<Coin>> = MutableLiveData(emptyList())
             override suspend fun getCoinDetail(coinId: String): Coin = throw Exception()
         }
         val viewModel = CryptoListViewModel(repository, navigation)

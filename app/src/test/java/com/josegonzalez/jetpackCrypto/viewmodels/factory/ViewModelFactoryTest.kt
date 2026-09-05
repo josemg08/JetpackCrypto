@@ -4,6 +4,7 @@ import com.josegonzalez.jetpackCrypto.fake.FakeCryptoNavigation
 import com.josegonzalez.jetpackCrypto.fake.FakeCryptoRepository
 import com.josegonzalez.jetpackCrypto.viewmodels.CryptoDetailViewModel
 import com.josegonzalez.jetpackCrypto.viewmodels.CryptoListViewModel
+import com.josegonzalez.jetpackCrypto.viewmodels.CryptoTopGainersViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -43,5 +44,12 @@ class ViewModelFactoryTest {
         val factory = CryptoDetailViewModelFactory(repository, navigation)
         val viewModel = factory.create(CryptoDetailViewModel::class.java)
         assertTrue(viewModel is CryptoDetailViewModel)
+    }
+
+    @Test
+    fun `CryptoTopGainersViewModelFactory creates CryptoTopGainersViewModel`() {
+        val factory = CryptoTopGainersViewModelFactory(repository)
+        val viewModel = factory.create(CryptoTopGainersViewModel::class.java)
+        assertTrue(viewModel is CryptoTopGainersViewModel)
     }
 }
