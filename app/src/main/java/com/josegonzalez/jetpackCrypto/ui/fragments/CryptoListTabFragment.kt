@@ -5,25 +5,36 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
-import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
-import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.databinding.FragmentCryptoListTabBinding
 import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoPagingAdapter
-import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.viewmodels.CryptoListViewModel
-import com.josegonzalez.jetpackCrypto.viewmodels.factory.CryptoListViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class CryptoListTabFragment : Fragment() {
 
     private var _binding: FragmentCryptoListTabBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: CryptoListContract
+    @Inject
+    lateinit var viewModelFactory: CryptoListViewModel.Factory
+
+    private val viewModel: CryptoListViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return viewModelFactory.create(requireParentFragment() as CryptoNavigation) as T
+            }
+        }
+    }
+
     private lateinit var adapter: CryptoPagingAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -33,12 +44,6 @@ class CryptoListTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val navigation = requireParentFragment() as CryptoNavigation
-        val database = CryptoDatabase.getInstance(requireContext())
-        val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
-        val factory = CryptoListViewModelFactory(repository, navigation)
-        viewModel = ViewModelProvider(this, factory)[CryptoListViewModel::class.java]
 
         adapter = CryptoPagingAdapter { coin -> viewModel.onCoinSelected(coin) }
         binding.rvCoins.layoutManager = LinearLayoutManager(requireContext())

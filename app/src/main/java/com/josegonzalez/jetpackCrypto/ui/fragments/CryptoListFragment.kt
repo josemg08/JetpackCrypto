@@ -11,7 +11,9 @@ import com.josegonzalez.jetpackCrypto.databinding.FragmentCryptoListBinding
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.adapters.CryptoHomePagerAdapter
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CryptoListFragment : Fragment(), CryptoNavigation {
 
     private var _binding: FragmentCryptoListBinding? = null

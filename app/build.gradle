@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.navigation.safeargs)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -85,10 +86,15 @@ dependencies {
     // Paging 3
     implementation libs.androidx.paging.runtime.ktx
 
+    // Hilt
+    implementation libs.hilt.android
+    ksp libs.hilt.compiler
+
     // Tests
     testImplementation libs.junit
     testImplementation libs.androidx.arch.core.testing
     testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
     androidTestImplementation libs.androidx.junit.v121
     androidTestImplementation libs.androidx.espresso.core.v361
 }

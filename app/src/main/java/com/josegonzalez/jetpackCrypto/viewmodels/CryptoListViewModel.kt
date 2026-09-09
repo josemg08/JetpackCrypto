@@ -11,11 +11,19 @@ import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoListContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class CryptoListViewModel(
+class CryptoListViewModel @AssistedInject constructor(
     repository: CryptoRepository,
-    private val navigation: CryptoNavigation
+    @Assisted private val navigation: CryptoNavigation
 ) : ViewModel(), CryptoListContract {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(navigation: CryptoNavigation): CryptoListViewModel
+    }
 
     override val coinsFlow: LiveData<PagingData<Coin>> = repository.getCoinsPaged()
         .cachedIn(viewModelScope)
@@ -26,5 +34,7 @@ class CryptoListViewModel(
 
     override fun onRefresh() {}
 
-    override fun onCoinSelected(coin: Coin) = navigation.navigateToDetail(coin)
+    override fun onCoinSelected(coin: Coin) {
+        navigation.navigateToDetail(coin)
+    }
 }

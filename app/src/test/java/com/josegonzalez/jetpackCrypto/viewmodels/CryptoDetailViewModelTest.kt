@@ -107,4 +107,14 @@ class CryptoDetailViewModelTest {
 
         assertEquals(false, viewModel.isLoading.value)
     }
+
+    @Test
+    fun `onBackClicked delegatesToNavigation`() {
+        val repository = FakeCryptoRepository()
+        val viewModel = CryptoDetailViewModel(repository, navigation)
+
+        viewModel.onBackClicked()
+
+        assertEquals(1, navigation.navigateBackCount)
+    }
 }
