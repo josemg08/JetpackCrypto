@@ -1,7 +1,5 @@
 package com.josegonzalez.jetpackCrypto.fake
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
@@ -29,8 +27,8 @@ class FakeCryptoRepository(
         return flowOf(PagingData.from(coins))
     }
 
-    override fun getTopGainers(): LiveData<List<Coin>> {
-        return MutableLiveData(coins.take(10))
+    override fun getTopGainers(): Flow<List<Coin>> {
+        return flowOf(coins.take(10))
     }
 
     override suspend fun getCoinDetail(coinId: String): Coin {

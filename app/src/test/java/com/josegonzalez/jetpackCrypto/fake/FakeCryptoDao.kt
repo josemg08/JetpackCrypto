@@ -1,14 +1,16 @@
 package com.josegonzalez.jetpackCrypto.fake
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.josegonzalez.jetpackCrypto.data.local.dao.CryptoDao
 import com.josegonzalez.jetpackCrypto.data.local.entity.CoinEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 class FakeCryptoDao : CryptoDao {
     private val coins = mutableListOf<CoinEntity>()
+    private val coinsFlow = MutableStateFlow<List<CoinEntity>>(emptyList())
     var wasPagingSourceCreated = false
 
     override fun getCoinsAsPagingSource(): PagingSource<Int, CoinEntity> {
@@ -21,15 +23,17 @@ class FakeCryptoDao : CryptoDao {
         }
     }
 
-    override fun getTopGainers(): LiveData<List<CoinEntity>> {
-        return MutableLiveData(coins.take(10))
+    override fun getTopGainers(): Flow<List<CoinEntity>> {
+        return coinsFlow.map { it.take(10) }
     }
 
     override suspend fun insertAll(coins: List<CoinEntity>) {
         this.coins.addAll(coins)
+        coinsFlow.value = this.coins.toList()
     }
 
     override suspend fun clearAll() {
         this.coins.clear()
+        coinsFlow.value = emptyList()
     }
 }
