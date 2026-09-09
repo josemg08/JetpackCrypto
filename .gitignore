@@ -1,0 +1,41 @@
+# Built output
+build/
+*/build/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+local.properties
+
+# Android Studio / IntelliJ IDEA
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+.idea/androidTestResultsUserPreferences.xml
+.idea/AndroidProjectSystem.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
+.idea/firebender/
+.idea/gradle.xml
+.idea/misc.xml
+.idea/runConfigurations.xml
+.idea/vcs.xml
+*.iml
+*.ipr
+*.iws
+
+# Key / signing files
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db

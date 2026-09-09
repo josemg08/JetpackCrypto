@@ -7,8 +7,11 @@ import androidx.lifecycle.asLiveData
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class CryptoTopGainersViewModel(
+@HiltViewModel
+class CryptoTopGainersViewModel @Inject constructor(
     repository: CryptoRepository
 ) : ViewModel(), CryptoTopGainersContract {
 

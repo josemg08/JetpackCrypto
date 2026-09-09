@@ -8,12 +8,20 @@ import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.launch
 
-class CryptoDetailViewModel(
+class CryptoDetailViewModel @AssistedInject constructor(
     private val repository: CryptoRepository,
-    private val navigation: CryptoNavigation
+    @Assisted private val navigation: CryptoNavigation
 ) : ViewModel(), CryptoDetailContract {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(navigation: CryptoNavigation): CryptoDetailViewModel
+    }
 
     private val _coin = MutableLiveData<Coin?>()
     override val coin: LiveData<Coin?> = _coin
@@ -36,5 +44,9 @@ class CryptoDetailViewModel(
                 _isLoading.value = false
             }
         }
+    }
+
+    fun onBackClicked() {
+        navigation.navigateBack()
     }
 }
