@@ -32,21 +32,15 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
-import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
-import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
-import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.ui.contract.SearchContract
 import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.SearchViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.SearchViewModelFactory
+import com.josegonzalez.jetpackCrypto.viewmodels.SearchViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SearchBottomSheetFragment : BottomSheetDialogFragment() {
 
-    private val viewModel: SearchViewModel by viewModels {
-        val database = CryptoDatabase.getInstance(requireContext().applicationContext)
-        val repository = CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
-        SearchViewModelFactory(repository)
-    }
+    private val viewModel: SearchViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -1,4 +1,4 @@
-package com.josegonzalez.jetpackCrypto.ui.viewmodels
+package com.josegonzalez.jetpackCrypto.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,6 +6,8 @@ import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.domain.repository.CryptoRepository
 import com.josegonzalez.jetpackCrypto.ui.contract.SearchContract
 import com.josegonzalez.jetpackCrypto.ui.contract.SearchUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +17,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SearchViewModel(
+@HiltViewModel
+class SearchViewModel @Inject constructor(
     private val repository: CryptoRepository
 ) : ViewModel(), SearchContract {
 
@@ -39,6 +42,6 @@ class SearchViewModel(
     }
 
     override fun onCoinSelected(coin: Coin) {
-        // Handled by the fragment/navigation
+        // Handled by navigation
     }
 }
