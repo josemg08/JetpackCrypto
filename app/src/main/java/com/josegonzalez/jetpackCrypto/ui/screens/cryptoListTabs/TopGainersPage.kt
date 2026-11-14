@@ -10,8 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
@@ -22,7 +22,7 @@ fun TopGainersPage(
     viewModel: CryptoTopGainersContract,
     onCoinClick: (Coin) -> Unit
 ) {
-    val coins by viewModel.topGainers.observeAsState(emptyList())
+    val coins by viewModel.topGainers.collectAsStateWithLifecycle()
 
     // derivedStateOf to prevent recomposition if the list is empty logic changes.
     val isEmpty by remember {

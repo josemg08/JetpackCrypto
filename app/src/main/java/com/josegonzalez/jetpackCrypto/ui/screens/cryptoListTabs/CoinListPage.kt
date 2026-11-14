@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.asFlow
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
@@ -28,7 +27,7 @@ fun CoinListPage(
     onCoinClick: (Coin) -> Unit
 ) {
     // remember(viewModel) ensures we only create the flow once.
-    val coinsFlow = remember(viewModel) { viewModel.coinsFlow.asFlow() }
+    val coinsFlow = viewModel.coinsFlow
     val lazyPagingItems = coinsFlow.collectAsLazyPagingItems()
 
     // derivedStateOf is crucial here to prevent recomposition when loadState changes

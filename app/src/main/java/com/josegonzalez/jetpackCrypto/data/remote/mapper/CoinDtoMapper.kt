@@ -22,10 +22,10 @@ fun CoinDetailDto.toDomain(): Coin = Coin(
     symbol = symbol.uppercase(),
     name = name,
     imageUrl = image?.large.orEmpty(),
-    currentPriceUsd = 0.0,
-    marketCapRank = 0,
-    priceChangePercentage24h = 0.0,
-    high24h = 0.0,
-    low24h = 0.0,
-    lastUpdated = ""
+    currentPriceUsd = marketData?.currentPrice?.get("usd") ?: 0.0,
+    marketCapRank = marketData?.marketCapRank ?: 0,
+    priceChangePercentage24h = marketData?.priceChangePercentage24h ?: 0.0,
+    high24h = marketData?.high24h?.get("usd") ?: 0.0,
+    low24h = marketData?.low24h?.get("usd") ?: 0.0,
+    lastUpdated = marketData?.lastUpdated.orEmpty()
 )
