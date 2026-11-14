@@ -29,55 +29,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.R
-import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
-import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
-import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailContract
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailUiState
-import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
 import com.josegonzalez.jetpackCrypto.ui.theme.JetpackCryptoTheme
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoDetailViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CryptoDetailScreen(
     coinId: String,
+    viewModel: CryptoDetailContract,
     onNavigateBack: () -> Unit
 ) {
-    val context = LocalContext.current
-
-    // Using remember for repository and database to avoid recreation.
-    val repository = remember(context) {
-        val database = CryptoDatabase.getInstance(context.applicationContext)
-        CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao())
-    }
-
-    // remember the navigation callback to keep it stable.
-    val navigation = remember(onNavigateBack) {
-        object : CryptoNavigation {
-            override fun navigateToDetail(coin: Coin) {}
-            override fun navigateBack() {
-                onNavigateBack()
-            }
-        }
-    }
-
-    val factory = remember(repository, navigation) {
-        CryptoDetailViewModelFactory(repository, navigation)
-    }
-    val viewModel: CryptoDetailViewModel = viewModel(factory = factory)
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(coinId) {
