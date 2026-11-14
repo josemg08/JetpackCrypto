@@ -21,14 +21,12 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.asFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -42,8 +40,7 @@ private val tabs = listOf("All Coins", "Top Gainers")
 @Composable
 fun CryptoListScreen(
     listViewModel: CryptoListContract,
-    gainersViewModel: CryptoTopGainersContract,
-    onCoinClick: (Coin) -> Unit
+    gainersViewModel: CryptoTopGainersContract
 ) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
@@ -63,8 +60,8 @@ fun CryptoListScreen(
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
-                0 -> CoinListPage(viewModel = listViewModel, onCoinClick = onCoinClick)
-                1 -> TopGainersPage(viewModel = gainersViewModel, onCoinClick = onCoinClick)
+                0 -> CoinListPage(viewModel = listViewModel)
+                1 -> TopGainersPage(viewModel = gainersViewModel)
             }
         }
     }
@@ -72,11 +69,9 @@ fun CryptoListScreen(
 
 @Composable
 private fun CoinListPage(
-    viewModel: CryptoListContract,
-    onCoinClick: (Coin) -> Unit
+    viewModel: CryptoListContract
 ) {
-    val coinsFlow = remember(viewModel) { viewModel.coinsFlow.asFlow() }
-    val lazyPagingItems = coinsFlow.collectAsLazyPagingItems()
+    val lazyPagingItems = viewModel.coinsFlow.collectAsLazyPagingItems()
     val isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading
     val error = lazyPagingItems.loadState.refresh as? LoadState.Error
 
@@ -87,7 +82,7 @@ private fun CoinListPage(
                 key = { index -> lazyPagingItems[index]?.id ?: index }
             ) { index ->
                 lazyPagingItems[index]?.let { coin ->
-                    CoinItem(coin = coin, onClick = { onCoinClick(coin) })
+                    CoinItem(coin = coin, onClick = { viewModel.onCoinSelected(coin) })
                     HorizontalDivider()
                 }
             }
@@ -119,10 +114,9 @@ private fun CoinListPage(
 
 @Composable
 private fun TopGainersPage(
-    viewModel: CryptoTopGainersContract,
-    onCoinClick: (Coin) -> Unit
+    viewModel: CryptoTopGainersContract
 ) {
-    val coins by viewModel.topGainers.observeAsState(emptyList())
+    val coins by viewModel.topGainers.collectAsStateWithLifecycle()
 
     if (coins.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -134,7 +128,7 @@ private fun TopGainersPage(
                 count = coins.size,
                 key = { index -> coins[index].id }
             ) { index ->
-                CoinItem(coin = coins[index], onClick = { onCoinClick(coins[index]) })
+                CoinItem(coin = coins[index], onClick = { viewModel.onCoinSelected(coins[index]) })
                 HorizontalDivider()
             }
         }

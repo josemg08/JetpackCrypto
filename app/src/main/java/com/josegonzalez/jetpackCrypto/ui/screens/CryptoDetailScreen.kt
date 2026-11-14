@@ -24,46 +24,25 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.josegonzalez.jetpackCrypto.data.local.database.CryptoDatabase
-import com.josegonzalez.jetpackCrypto.data.remote.api.RetrofitClient
-import com.josegonzalez.jetpackCrypto.data.repository.CryptoRepositoryImpl
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
-import com.josegonzalez.jetpackCrypto.ui.contract.CryptoNavigation
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.CryptoDetailViewModel
-import com.josegonzalez.jetpackCrypto.ui.viewmodels.factory.CryptoDetailViewModelFactory
+import com.josegonzalez.jetpackCrypto.ui.contract.CryptoDetailContract
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CryptoDetailScreen(
     coinId: String,
+    viewModel: CryptoDetailContract,
     onNavigateBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    val database = remember { CryptoDatabase.getInstance(context.applicationContext) }
-    val repository = remember { CryptoRepositoryImpl(RetrofitClient.apiService, database.cryptoDao()) }
-    
-    // We use a dummy navigation for the ViewModel as we handle navigation in the NavGraph
-    val dummyNavigation = object : CryptoNavigation {
-        override fun navigateToDetail(coin: Coin) {}
-        override fun navigateBack() { onNavigateBack() }
-    }
-
-    val factory = remember(repository) { CryptoDetailViewModelFactory(repository, dummyNavigation) }
-    val viewModel: CryptoDetailViewModel = viewModel(factory = factory)
-
-    val coin by viewModel.coin.observeAsState()
-    val isLoading by viewModel.isLoading.observeAsState(false)
-    val errorMessage by viewModel.errorMessage.observeAsState()
+    val coin by viewModel.coin.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(coinId) {
         viewModel.loadCoin(coinId)
@@ -72,19 +51,16 @@ fun CryptoDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(coin?.name ?: "Detail") },
+                title = { Text(coin?.name ?: "Coin Detail") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
         }
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (errorMessage != null) {
@@ -132,10 +108,9 @@ private fun CryptoDetailContent(coin: Coin) {
         )
         Spacer(modifier = Modifier.height(32.dp))
         HorizontalDivider()
-        Spacer(modifier = Modifier.height(16.dp))
+        DetailRow(label = "Market Cap Rank", value = "#${coin.marketCapRank}")
         DetailRow(label = "24h High", value = "$${String.format("%.2f", coin.high24h)}")
         DetailRow(label = "24h Low", value = "$${String.format("%.2f", coin.low24h)}")
-        DetailRow(label = "Market Cap Rank", value = "#${coin.marketCapRank}")
         DetailRow(label = "Last Updated", value = coin.lastUpdated.take(10))
     }
 }

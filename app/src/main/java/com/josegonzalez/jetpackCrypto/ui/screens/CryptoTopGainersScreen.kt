@@ -23,11 +23,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.josegonzalez.jetpackCrypto.domain.model.Coin
 import com.josegonzalez.jetpackCrypto.ui.contract.CryptoTopGainersContract
@@ -38,7 +38,8 @@ fun CryptoTopGainersScreen(
     viewModel: CryptoTopGainersContract,
     onNavigateBack: () -> Unit
 ) {
-    val coins by viewModel.topGainers.observeAsState(emptyList())
+    val coins by viewModel.topGainers.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -52,11 +53,8 @@ fun CryptoTopGainersScreen(
             )
         }
     ) { padding ->
-        if (coins.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
+        if (isLoading && coins.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Loading top gainers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
@@ -108,10 +106,16 @@ private fun TopGainerItem(rank: Int, coin: Coin, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Text(
-            text = "+${String.format("%.2f", coin.priceChangePercentage24h)}%",
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFF00C853)
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "$${String.format("%.2f", coin.currentPriceUsd)}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "${String.format("%.2f", coin.priceChangePercentage24h)}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (coin.priceChangePercentage24h >= 0) Color(0xFF00C853) else Color(0xFFD50000)
+            )
+        }
     }
 }

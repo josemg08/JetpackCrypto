@@ -7,16 +7,17 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.josegonzalez.jetpackCrypto.ui.work.CryptoPriceRefreshWorker
+import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
 
-class JetpackCryptoApp : Application() {
-
+@HiltAndroidApp
+class CryptoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        schedulePriceRefresh()
+        initWork()
     }
 
-    private fun schedulePriceRefresh() {
+    private fun initWork() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
