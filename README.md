@@ -8,6 +8,10 @@ Each class maps to a branch. Checkout any branch to see the app at that exact st
 
 ## What the App Does
 
+<table>
+<tr>
+<td>
+
 - Fetches the top 100 cryptocurrencies from CoinGecko (no API key required)
 - Displays a paginated list with coin name, symbol, logo, and current USD price
 - Tapping a coin opens a detail screen with 24h high/low and price change
@@ -16,6 +20,15 @@ Each class maps to a branch. Checkout any branch to see the app at that exact st
 - Search with debounced query, presented as a ModalBottomSheet
 - Snackbar error handling with custom error content
 - Custom theme via [KouraiKhryseai](https://github.com/josemg08/KouraiKhryseai)
+
+</td>
+<td width="40%">
+
+<img src="docs/Screenshot_20261115_212513.jpg" alt="App screenshot showing cryptocurrency list" width="270"/>
+
+</td>
+</tr>
+</table>
 
 ---
 
